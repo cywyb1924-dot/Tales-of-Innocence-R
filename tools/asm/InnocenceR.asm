@@ -150,4 +150,24 @@ movs r1,/*#*/0x00
 .org 0x8111E9C2
 movw r1,/*#*/0x00 ; movw r1,/*#*/0x209
 
+;################################
+;   [KO, EXPERIMENTAL/UNTESTED]
+;   Force SceFontStyleInfo.fontLanguage
+;   from JAPANESE(1) to KOREAN(3) so
+;   sceFontFindOptimumFont picks the
+;   system's Korean PVF font instead
+;   of the Japanese one.
+;
+;   WARNING: the same register value
+;   is also written to fontRegion and
+;   fontCountry right after (see
+;   tools/toir/font_research/README.md
+;   for full disassembly) so this
+;   changes all three fields 1 -> 3.
+;   NOT verified on real hardware or
+;   an emulator yet.
+;################################
+.org 0x810058E0
+movs.w lr,/*#*/0x03 ; og movs.w lr,/*#*/0x01
+
 .close

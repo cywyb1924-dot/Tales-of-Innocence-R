@@ -35,6 +35,9 @@ import sys
 import struct
 from pathlib import Path
 
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+
 # vitasdk/vita-headers db/360/SceLibPgf.yml (module: SceLibFont) 기준 검증된 NID
 FONT_NIDS = {
     'sceFontNewLib': 0x1055ABA3,

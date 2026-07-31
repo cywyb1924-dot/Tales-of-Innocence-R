@@ -21,10 +21,7 @@
 
 ## 전체 파이프라인 (원본 README.md 기준)
 
-1. **덤프 및 복호화** (사용자 측에서 직접 수행 필요 — 아래 "선결 과제" 참고)
-   - `pkg2zip`으로 PSN pkg 추출
-   - `psvpfstools`로 `toidata_release.l7c` 등 파일시스템 복호화 (zRIF 필요)
-   - 실물(HENkaku/enso 적용) PS Vita + `FAGDec.vpk`로 `eboot.bin` 복호화 (EBOOT은 FSELF라 PC만으로는 복호화 불가)
+1. **덤프 및 복호화** — 완료 (아래 "진행 상황 업데이트" 참고). `pkg2zip` 추출 덤프의 `work.bin`에 유효한 klicensee가 있다면 실물 Vita 없이 PC만으로 전부 복호화 가능함을 확인했습니다 (`psvpfsparser` + `self2elf.py`).
 2. **텍스트 추출**: `python tools/toir/extract.py <복호화된 소스> 1_extracted`
    - `ItemDataPack`, `ArtsDataPack`, `BattleBookDataPack`, `CharaAbility`, `PackFieldData`, `MissionData`, `TutorialData`, `eboot.bin` 시스템 텍스트, `Script/**` 스토리, `Field/MapData/*` NPC 대사, `Skit/**` 스킷 대사 추출
 3. **번역**: 추출된 CSV에 `Korean` 컬럼을 채워 `2_translated`에 배치 (Google Sheets 협업도 가능 — 새 시트 구성 필요, 기존 영문 시트와는 별도)
@@ -32,28 +29,42 @@
 5. **L7C 재패킹**: `Kuriimu2.exe extensions batch-inject orig-dir patch-dir` (Kuriimu2 재압축 시 크래시 이슈가 보고된 바 있어 — [Kuriimu2#136](https://github.com/FanTranslatorsInternational/Kuriimu2/issues/136) — 원본 프로젝트의 정확한 batch-inject 절차를 그대로 따라야 함)
 6. **패치 배포본 생성**: `xdelta.exe`로 원본 대비 diff 패치(`.xdelta`) 생성 후 배포 (게임 파일 자체는 재배포하지 않음)
 
-## ⚠️ 선결 과제 (Blocker)
+## ✅ 진행 상황 업데이트
 
-### 1. 복호화된 게임 덤프 확보 — 사용자 작업 필요
-`eboot.bin`과 `toidata_release.l7c`는 현재 이 저장소/작업 환경에 없으며, 실물 PS Vita 하드웨어 + 정규 구매한 게임의 zRIF가 있어야 복호화할 수 있습니다. 이 부분은 원격 환경에서 자동화할 수 없고, 사용자가 직접 진행 후 `0_gamefiles/`에 배치해야 다음 단계(텍스트 추출)를 실행할 수 있습니다.
+### 1. 게임 덤프 복호화 — 완료 (PC만으로 오프라인 복호화 성공)
+당초 실물 Vita가 필요하다고 알려져 있었지만, 로컬 작업 환경(PC)만으로 전부 복호화하는 데 성공했습니다. `work.bin`(pkg2zip이 만든 NoNpDrm 라이선스 파일) 안에 이미 유효한 klicensee가 들어있었던 덕분입니다.
 
-### 2. 한글 폰트/글리프 렌더링 여부 — 조사 필요 (한글화 고유의 리스크)
-텍스트 인코딩 자체는 `toir/text.py`에서 UTF-8을 그대로 사용하므로 한글 텍스트를 데이터에 넣는 것 자체는 기술적으로 문제 없습니다. 그러나 **화면에 실제로 한글 글리프가 그려지는지는 별도 문제**입니다.
-- 이 저장소의 도구 어디에도 폰트/글리프 아틀라스를 추출·수정하는 코드가 없습니다 (`texture.py`의 `_TEX_FILES` 목록에도 폰트 관련 항목 없음). 이는 게임이 자체 비트맵 폰트가 아니라 **PS Vita 시스템의 `SceLibFont`(고수준 폰트 API, `pgf.h`) 를 런타임에 호출**해서 텍스트를 그릴 가능성을 시사합니다.
-- `SceLibFont`는 `SceFontStyleInfo.languageCode` 값에 따라 시스템에 내장된 언어별 폰트를 선택합니다 (vitasdk `pgf.h` 기준: `SCE_FONT_LANGUAGE_JAPANESE=1`, `SCE_FONT_LANGUAGE_LATIN=2`, `SCE_FONT_LANGUAGE_KOREAN=3`, `SCE_FONT_LANGUAGE_CHINESE=4`, `SCE_FONT_LANGUAGE_CJK=5`). PS Vita는 한국 정식 출시 기종이라 시스템에 한국어 폰트가 내장돼 있으므로, 게임이 이 값을 일본어(1)로 고정 호출하고 있다면 **해당 값을 한국어(3) 또는 CJK(5)로 바꾸는 것만으로 한글 글리프가 정상 표시될 가능성**이 있습니다. (반대로 게임이 자체 임베드 폰트 리소스를 쓰고 있다면 이 방법은 통하지 않고 폰트 리소스 자체 교체가 필요합니다 — 실물 확인 전에는 단정 불가)
-- `tools/toir/find_font_nids.py` 스크립트를 추가했습니다. 복호화된 `eboot.bin`이 준비되면 아래처럼 실행해 `SceLibFont` 관련 함수(`sceFontOpen`, `sceFontFindOptimumFont` 등)의 NID가 바이너리 어디에 임포트되어 있는지 찾을 수 있습니다. NID는 vitasdk 공식 `vita-headers` 저장소의 `db/360/SceLibPgf.yml`에서 가져온 검증된 값입니다.
-  ```
-  python tools/toir/find_font_nids.py 0_gamefiles/eboot.bin
-  ```
-  이후 Ghidra 등으로 해당 오프셋의 import stub을 찾아 호출부(cross-reference)를 추적하면, 실제로 언어 코드를 세팅하는 위치를 특정할 수 있습니다. (이 스크립트는 표준 라이브러리만 사용한 단순 바이트 스캐너이며, 아직 Python이 없는 환경에서 작성해 실제 eboot.bin으로 실행 검증은 못했습니다 — 첫 실행 시 결과를 공유해주시면 이어서 분석하겠습니다.)
-- 최악의 경우(자체 임베드 폰트로 확인될 경우) 폰트 리소스 자체를 한글 포함 폰트로 교체하는 작업이 필요할 수 있습니다 (`tools/asm/InnocenceR.asm`에 이미 monospace/폭 조정 패치들이 있어 참고 가능).
+1. `work.bin` 오프셋 `0x50`에서 16바이트 klicensee 추출
+2. [`rreha/psvdec`](https://github.com/rreha/psvdec)에 번들된 `psvpfsparser.exe`로 PFS 계층 복호화 (`-k <klicensee> -f http://cma.henkaku.xyz`) → `eboot.bin`, `toidata_release.l7c` 등 전체 복호화, keystone 무결성 검증(`matched retail hmac`) 통과
+3. [`TeamMolecule/sceutils`](https://github.com/TeamMolecule/sceutils)의 `self2elf.py` (+ 커뮤니티에 공개된 소니 마스터키 `keys.py`)로 남은 NPDRM/FSELF 계층까지 벗겨 순수 ELF(`eboot.elf`) 확보
+4. Content ID(`JP0700-PCSG00009_00-TOIRFULLGAME0001`)가 `param.sfo`와 정확히 일치 — 복호화 검증 완료
+
+결과물(`eboot.elf`, 복호화된 `toidata_release.l7c` 등)은 저작권 있는 게임 데이터라 **git에 커밋하지 않고 로컬에만 보관**합니다.
+
+### 2. 한글 폰트 렌더링 — 하드코딩 지점 특정 완료 (패치는 미검증)
+`eboot.elf`를 정적 분석(자체 import 테이블 파서 + Thumb-2 BL 스캐너 + capstone 역어셈블, 전부 `tools/toir/font_research/`에 있음)한 결과:
+- 게임은 실제로 PS Vita 시스템의 `ScePgf`(SceLibFont) API를 사용합니다 (자체 비트맵 폰트 아님 — 가설이 확인됨).
+- `0x810058F0`에서 `SceFontStyleInfo.fontLanguage` 필드에 `1`(`SCE_FONT_LANGUAGE_JAPANESE`)을 **하드코딩**하고 있는 지점을 정확히 찾았습니다.
+- 패치 후보: eboot.elf 파일 오프셋 `0x68E0`, `movs.w lr, #1` (바이트 `5F F0 01 0E`) → `movs.w lr, #3` (바이트 `5F F0 03 0E`)로 변경하면 `SCE_FONT_LANGUAGE_KOREAN`으로 전환됩니다.
+- **주의**: 같은 레지스터 값을 `fontRegion`/`fontCountry` 필드에도 재사용하고 있어 이 패치 하나로 세 필드가 동시에 바뀝니다. 실기/에뮬레이터 테스트로 부작용이 없는지 확인 필요.
+
+자세한 조사 과정과 어셈블리 전문은 [`tools/toir/font_research/README.md`](tools/toir/font_research/README.md)를 참고하세요.
+
+## 남은 과제
+
+### toidata_release.l7c 압축 해제 (진행 예정)
+`extract.py`는 `toidata_release.l7c`가 아니라 **미리 압축 해제된 `_Data` 폴더**를 기대합니다. 원본 프로젝트는 Kuriimu2 GUI로 이 작업을 했는데, GUI 자동화는 아직 시도하지 않았습니다 — CLI/배치 방식을 찾거나 L7CA 포맷을 직접 파싱하는 방법을 다음 단계로 조사할 예정입니다.
+
+### 패치 검증
+언어 코드 패치는 아직 실기/에뮬레이터에서 테스트되지 않았습니다. Vita3K 에뮬레이터로 먼저 검증하는 방안을 고려 중입니다.
 
 ## 다음 할 일
-- [ ] 사용자: 실물 Vita로 `eboot.bin` / `toidata_release.l7c` 복호화 후 `0_gamefiles/`에 배치
+- [x] 게임 덤프 복호화 (PC만으로 완료)
+- [x] `SceLibFont` 사용 여부 확인 및 언어 코드 하드코딩 지점 특정
+- [ ] `toidata_release.l7c` 압축 해제 (Kuriimu2 CLI 또는 자체 L7CA 파서)
 - [ ] `extract.py` 실행해 `1_extracted/`에 일본어 원문 CSV 생성
 - [ ] 한글 번역 워크플로우 구성 (자체 스프레드시트 or 로컬 CSV 직접 편집)
-- [ ] `find_font_nids.py`로 `SceLibFont` NID 위치 확인 → Ghidra로 호출부 리버싱 → 한글 글리프 렌더링 가능 여부 확정
-- [ ] 필요 시 언어 코드 패치(간단) 또는 폰트 리소스 교체(복잡) 진행
+- [ ] 언어 코드 패치를 Vita3K 등으로 검증
 - [ ] `recompile.py` → Kuriimu2 batch-inject → xdelta 패치 생성까지 1회 시험 진행 (아이템 설명 등 짧은 텍스트로 우선 검증 권장)
 
 ## 참고
