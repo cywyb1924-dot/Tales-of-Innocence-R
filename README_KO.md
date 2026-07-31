@@ -50,20 +50,46 @@
 
 자세한 조사 과정과 어셈블리 전문은 [`tools/toir/font_research/README.md`](tools/toir/font_research/README.md)를 참고하세요.
 
-## 남은 과제
+### 3. `toidata_release.l7c` 압축 해제 — 완료 (Kuriimu2 GUI 없이 CLI로)
+Kuriimu2는 배치 추출 CLI가 없어서, 대신 원본 포맷을 직접 구현한
+[`onepiecefreak3/taikotools`](https://github.com/onepiecefreak3/taikotools)의
+`psvita-l7ctool`(C#)을 사용했습니다. 레거시 .NET Framework 4.5 프로젝트라
+.NET 8 SDK로 바로 빌드가 안 되길래, SDK 스타일 csproj로 재타겟팅해서 빌드했습니다.
 
-### toidata_release.l7c 압축 해제 (진행 예정)
-`extract.py`는 `toidata_release.l7c`가 아니라 **미리 압축 해제된 `_Data` 폴더**를 기대합니다. 원본 프로젝트는 Kuriimu2 GUI로 이 작업을 했는데, GUI 자동화는 아직 시도하지 않았습니다 — CLI/배치 방식을 찾거나 L7CA 포맷을 직접 파싱하는 방법을 다음 단계로 조사할 예정입니다.
+```
+psvita-l7ctool.exe x toidata_release.l7c
+```
+→ `_Data/` 트리 전체(14,076개 파일, 2.1GB) 정상 추출 확인.
 
-### 패치 검증
+L7CA 포맷: 48바이트 헤더(매직 `L7CA`, 버전, 아카이브 크기, 메타데이터 오프셋/크기,
+파일시스템 엔트리/폴더/파일/청크 개수, 문자열 테이블) + 파일시스템 엔트리 테이블
++ 파일 엔트리 테이블 + 청크 테이블(64KB 단위, 청크별 독자 압축) + 문자열 테이블.
+압축은 자체 LZ 계열 알고리즘(taiko 시리즈 게임과 공유하는 포맷이라 "Taiko" 압축이라
+명명됨) — zlib/lz4 아님.
+
+### 4. `extract.py`로 일본어 원문 텍스트 추출 — 완료
+`toir/formats/eboot/load.py`의 `address_to_offset()`가 `vaddr - 0x80FFE000`
+고정 공식을 쓰는데, 이는 SCE/SELF 헤더(0x2000바이트) + 비압축 ELF 형태의
+eboot.bin을 전제로 합니다. 반면 `self2elf.py` 결과물(`eboot.elf`)은 SELF 래퍼를
+완전히 제거한 순수 ELF라 오프셋이 0x1000만큼 어긋납니다. `eboot.elf` 앞에
+0x1000바이트 제로 패딩을 붙이는 것만으로 해결됩니다 (`tools/toir/prepare_eboot_for_extract.py`).
+
+결과: `1_extracted/`에 CSV 24개 생성 확인.
+- `Script.csv` 16,626줄 (스토리 대사), `Skit.csv` 34,255줄 (스킷 대사) — 총 5만 줄 이상의 방대한 텍스트 물량
+- `ItemDataPack.csv`, `ArtsDataPack.csv`, `CharaNames.csv` 등 시스템/메뉴 텍스트도 정상 추출
+- 스크립트 디코딩 중 일부 `.dat` 파일에서 에러 발생 (원본 프로젝트의 `toir/README.md`에도 "some files throw an error" 로 이미 언급된 기존 알려진 이슈 — 치명적인지는 미확인)
+
+(추출된 CSV는 게임 원문 텍스트라 저작권 문제로 git에 커밋하지 않습니다 — `1_extracted/.gitignore`가 이미 이를 막고 있습니다.)
+
+### 패치 검증 — 아직 미완료
 언어 코드 패치는 아직 실기/에뮬레이터에서 테스트되지 않았습니다. Vita3K 에뮬레이터로 먼저 검증하는 방안을 고려 중입니다.
 
 ## 다음 할 일
 - [x] 게임 덤프 복호화 (PC만으로 완료)
 - [x] `SceLibFont` 사용 여부 확인 및 언어 코드 하드코딩 지점 특정
-- [ ] `toidata_release.l7c` 압축 해제 (Kuriimu2 CLI 또는 자체 L7CA 파서)
-- [ ] `extract.py` 실행해 `1_extracted/`에 일본어 원문 CSV 생성
-- [ ] 한글 번역 워크플로우 구성 (자체 스프레드시트 or 로컬 CSV 직접 편집)
+- [x] `toidata_release.l7c` 압축 해제
+- [x] `extract.py` 실행해 `1_extracted/`에 일본어 원문 CSV 생성 (24개 CSV, 5만+ 줄)
+- [ ] 한글 번역 워크플로우 구성 (자체 스프레드시트 or 로컬 CSV 직접 편집) — 분량이 방대해 번역 방식/범위를 사용자와 상의 필요
 - [ ] 언어 코드 패치를 Vita3K 등으로 검증
 - [ ] `recompile.py` → Kuriimu2 batch-inject → xdelta 패치 생성까지 1회 시험 진행 (아이템 설명 등 짧은 텍스트로 우선 검증 권장)
 
