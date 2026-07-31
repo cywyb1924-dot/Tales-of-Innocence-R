@@ -39,17 +39,21 @@
 
 ### 2. 한글 폰트/글리프 렌더링 여부 — 조사 필요 (한글화 고유의 리스크)
 텍스트 인코딩 자체는 `toir/text.py`에서 UTF-8을 그대로 사용하므로 한글 텍스트를 데이터에 넣는 것 자체는 기술적으로 문제 없습니다. 그러나 **화면에 실제로 한글 글리프가 그려지는지는 별도 문제**입니다.
-- 이 저장소의 도구 어디에도 폰트/글리프 아틀라스를 추출·수정하는 코드가 없습니다 (`texture.py`의 `_TEX_FILES` 목록에도 폰트 관련 항목 없음). 이는 게임이 자체 비트맵 폰트가 아니라 **PS Vita 시스템 폰트(sceFont, `DFHSGothic` 계열)를 런타임에 호출**해서 텍스트를 그릴 가능성을 시사합니다.
-- PS Vita 시스템 폰트 팩에는 한국어 UI를 지원하기 위한 한글 폰트도 포함되어 있으나, 게임 코드가 일본어 폰트 ID를 고정으로 호출하고 있다면 한글 코드포인트는 빈 칸(tofu)으로 나올 수 있습니다.
-- 즉, 실제 게임 실행 파일(`eboot.bin`)을 리버싱해서 `sceFontOpen` 호출부와 언어/폰트 ID 파라미터를 찾아야 확정적으로 답할 수 있습니다. 이는 복호화된 덤프를 확보한 뒤 진행 가능한 조사입니다.
-- 최악의 경우 폰트 ID를 한국어 시스템 폰트로 강제 전환하는 ASM 패치가 필요할 수 있습니다 (`tools/asm/InnocenceR.asm`에 이미 monospace/폭 조정 패치들이 있어 참고 가능).
+- 이 저장소의 도구 어디에도 폰트/글리프 아틀라스를 추출·수정하는 코드가 없습니다 (`texture.py`의 `_TEX_FILES` 목록에도 폰트 관련 항목 없음). 이는 게임이 자체 비트맵 폰트가 아니라 **PS Vita 시스템의 `SceLibFont`(고수준 폰트 API, `pgf.h`) 를 런타임에 호출**해서 텍스트를 그릴 가능성을 시사합니다.
+- `SceLibFont`는 `SceFontStyleInfo.languageCode` 값에 따라 시스템에 내장된 언어별 폰트를 선택합니다 (vitasdk `pgf.h` 기준: `SCE_FONT_LANGUAGE_JAPANESE=1`, `SCE_FONT_LANGUAGE_LATIN=2`, `SCE_FONT_LANGUAGE_KOREAN=3`, `SCE_FONT_LANGUAGE_CHINESE=4`, `SCE_FONT_LANGUAGE_CJK=5`). PS Vita는 한국 정식 출시 기종이라 시스템에 한국어 폰트가 내장돼 있으므로, 게임이 이 값을 일본어(1)로 고정 호출하고 있다면 **해당 값을 한국어(3) 또는 CJK(5)로 바꾸는 것만으로 한글 글리프가 정상 표시될 가능성**이 있습니다. (반대로 게임이 자체 임베드 폰트 리소스를 쓰고 있다면 이 방법은 통하지 않고 폰트 리소스 자체 교체가 필요합니다 — 실물 확인 전에는 단정 불가)
+- `tools/toir/find_font_nids.py` 스크립트를 추가했습니다. 복호화된 `eboot.bin`이 준비되면 아래처럼 실행해 `SceLibFont` 관련 함수(`sceFontOpen`, `sceFontFindOptimumFont` 등)의 NID가 바이너리 어디에 임포트되어 있는지 찾을 수 있습니다. NID는 vitasdk 공식 `vita-headers` 저장소의 `db/360/SceLibPgf.yml`에서 가져온 검증된 값입니다.
+  ```
+  python tools/toir/find_font_nids.py 0_gamefiles/eboot.bin
+  ```
+  이후 Ghidra 등으로 해당 오프셋의 import stub을 찾아 호출부(cross-reference)를 추적하면, 실제로 언어 코드를 세팅하는 위치를 특정할 수 있습니다. (이 스크립트는 표준 라이브러리만 사용한 단순 바이트 스캐너이며, 아직 Python이 없는 환경에서 작성해 실제 eboot.bin으로 실행 검증은 못했습니다 — 첫 실행 시 결과를 공유해주시면 이어서 분석하겠습니다.)
+- 최악의 경우(자체 임베드 폰트로 확인될 경우) 폰트 리소스 자체를 한글 포함 폰트로 교체하는 작업이 필요할 수 있습니다 (`tools/asm/InnocenceR.asm`에 이미 monospace/폭 조정 패치들이 있어 참고 가능).
 
 ## 다음 할 일
 - [ ] 사용자: 실물 Vita로 `eboot.bin` / `toidata_release.l7c` 복호화 후 `0_gamefiles/`에 배치
 - [ ] `extract.py` 실행해 `1_extracted/`에 일본어 원문 CSV 생성
 - [ ] 한글 번역 워크플로우 구성 (자체 스프레드시트 or 로컬 CSV 직접 편집)
-- [ ] `eboot.bin` 내 `sceFontOpen` 호출부 리버싱 → 한글 글리프 렌더링 가능 여부 확정
-- [ ] 필요 시 폰트 ID 전환 ASM 패치 작성
+- [ ] `find_font_nids.py`로 `SceLibFont` NID 위치 확인 → Ghidra로 호출부 리버싱 → 한글 글리프 렌더링 가능 여부 확정
+- [ ] 필요 시 언어 코드 패치(간단) 또는 폰트 리소스 교체(복잡) 진행
 - [ ] `recompile.py` → Kuriimu2 batch-inject → xdelta 패치 생성까지 1회 시험 진행 (아이템 설명 등 짧은 텍스트로 우선 검증 권장)
 
 ## 참고
