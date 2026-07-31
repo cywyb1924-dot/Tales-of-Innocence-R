@@ -81,17 +81,29 @@ eboot.bin을 전제로 합니다. 반면 `self2elf.py` 결과물(`eboot.elf`)은
 
 (추출된 CSV는 게임 원문 텍스트라 저작권 문제로 git에 커밋하지 않습니다 — `1_extracted/.gitignore`가 이미 이를 막고 있습니다.)
 
-### 패치 검증 — 아직 미완료
-언어 코드 패치는 아직 실기/에뮬레이터에서 테스트되지 않았습니다. Vita3K 에뮬레이터로 먼저 검증하는 방안을 고려 중입니다.
+### 5. recompile → 재패킹 → xdelta 패치 파이프라인 — 검증 완료 (아이템 텍스트 1건 기준)
+Kuriimu2의 batch-inject는 crash 이슈가 보고돼 있었고(위 Issue #136), `psvita-l7ctool`의 전체 재생성(`c`)은 **압축을 안 해서 2GB를 넘기면 int32 오버플로우로 깨지는 버그**를 직접 겪었습니다. 그래서 `tools/toir/l7ca_patch.py`를 새로 작성해서, 바뀐 파일 하나만 원본 아카이브에 비압축으로 제자리 패치하는 방식으로 우회했습니다.
+
+- `ItemDataPack.csv`의 아이템 1개 이름/설명을 한글로 교체 → `recompile_items()` → `l7ca_patch.py`로 원본 1.4GB `toidata_release.l7c`에 패치 → 전체(14,076개 파일) 재압축해제해서 한글 텍스트가 정확히 보존됨을 확인
+- CRC32 불일치 경고 35건은 **원본에도 동일하게 존재**(diff로 확인) — `psvita-l7ctool`의 기존 한계이며 우리 패치와 무관
+- `xdelta3`로 원본 대비 diff 패치(71KB) 생성 → 그 패치를 원본에 적용한 결과가 패치본과 **바이트 단위로 완전 동일**함을 확인
+
+자세한 과정과 알아낸 버그들은 [`tools/toir/PIPELINE_VERIFIED.md`](tools/toir/PIPELINE_VERIFIED.md) 참고.
+
+## ⚠️ 이 환경에서 근본적으로 확인할 수 없는 것
+- **실제 게임이 패치된 파일을 로드하는지**: PS Vita도 Vita3K 에뮬레이터도 없어 파일 포맷 레벨 정합성까지만 검증했습니다.
+- **언어 코드 패치(폰트)가 실제로 한글을 그리는지**: 마찬가지로 실기/에뮬레이터 필요.
+- Script.csv/Skit.csv 같은 **가변 길이** 텍스트는 아직 이 파이프라인으로 시험 안 해봤습니다 (고정 크기 아이템 텍스트로만 검증).
 
 ## 다음 할 일
 - [x] 게임 덤프 복호화 (PC만으로 완료)
 - [x] `SceLibFont` 사용 여부 확인 및 언어 코드 하드코딩 지점 특정
 - [x] `toidata_release.l7c` 압축 해제
 - [x] `extract.py` 실행해 `1_extracted/`에 일본어 원문 CSV 생성 (24개 CSV, 5만+ 줄)
+- [x] recompile → l7c 제자리 패치 → xdelta 패치 생성 파이프라인 검증 (아이템 텍스트 1건)
 - [ ] 한글 번역 워크플로우 구성 (자체 스프레드시트 or 로컬 CSV 직접 편집) — 분량이 방대해 번역 방식/범위를 사용자와 상의 필요
-- [ ] 언어 코드 패치를 Vita3K 등으로 검증
-- [ ] `recompile.py` → Kuriimu2 batch-inject → xdelta 패치 생성까지 1회 시험 진행 (아이템 설명 등 짧은 텍스트로 우선 검증 권장)
+- [ ] 언어 코드 패치 + 재패킹된 l7c를 Vita3K 등 실물/에뮬레이터로 검증
+- [ ] Script/Skit 등 가변 길이 텍스트에 대한 패치 전략 검증
 
 ## 참고
 - 원본 영문 패치 프로젝트: https://github.com/lifebottle/Tales-of-Innocence-R
