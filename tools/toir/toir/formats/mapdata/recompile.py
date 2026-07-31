@@ -10,7 +10,7 @@ def read_from_csv(file):
         for row in reader:
             path = row['Path']
             section = int(row['Section'])
-            translation = row['English']
+            translation = row['Korean']
 
             if path not in script:
                 script[path] = {}

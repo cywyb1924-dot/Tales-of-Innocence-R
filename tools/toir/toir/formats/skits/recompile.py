@@ -9,7 +9,7 @@ def _read_skits(csvdir):
             path = row['File']
             field = row['Field']
             index = int(row['Index'])
-            text = row['English']
+            text = row['Korean']
 
             if path not in skits:
                 skits[path] = {}

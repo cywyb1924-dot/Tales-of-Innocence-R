@@ -9,7 +9,7 @@ def _read_story(csvdir):
             file = row['File']
             if file not in story:
                 story[file] = {}
-            translation = row['English']
+            translation = row['Korean']
 
             if '/' in row['#']:
                 index, subindex = row['#'].split('/')

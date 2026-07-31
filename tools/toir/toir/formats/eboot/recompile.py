@@ -16,7 +16,7 @@ def _load_eboot_csv(csvpath):
             if not id:
                 continue
             id = int(id, 16)
-            text[id] = row['English']
+            text[id] = row['Korean']
     return text
 
 def _decode_length(eboot, offset):
