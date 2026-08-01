@@ -72,6 +72,7 @@
 | 魂の巡礼路カルディア | 영혼의 순례길 칼디아 | |
 | 始祖の巨人 | 시조의 거인 | |
 | 異能者捕縛適応法 | 이능력자 포박 적응법 | 왕도의 법령명 |
+| 魂の救済者 | 영혼의 구원자 | `Skit.csv` 0000.dat에서 확인. 정체불명의 「？？？」가 자칭한 호칭 — 정황상 마티우스로 추정되나 스킷 시점에서는 미확정이므로 화자명은 원문 그대로 「？？？」 유지 |
 
 ### 일반 NPC 명칭 (직업/유형명) — 번역 규칙
 `CharaNames.csv`의 대다수(약 180개)는 고유명사가 아니라 직업·유형 설명입니다. 아래처럼 일관된 규칙으로 번역합니다:
@@ -130,7 +131,7 @@ Tales 시리즈 공통 관례를 따릅니다 (다른 Tales 게임 한글 팬번
 
 - [x] `CharaNames.csv`, `ItemDataPack.csv`(전체 12개 카테고리), `ArtsDataPack.csv`, `eboot.csv`, `KizunaDataPack.csv`, `StoryBookDataPack.csv` 등 짧은 시스템 텍스트 + 인연 이벤트 + 스토리 요약본 번역 완료 (`2_translated/*.csv`, 로컬 전용)
 - [ ] `MapData.csv` — 아직 미착수
-- [ ] `Script.csv`(본편 대사, 16,626줄) / `Skit.csv`(스킷 대사, 34,255줄) — **AI가 전체 번역하지 않기로 결정**. 실제 번역 주체(사용자 본인 또는 커뮤니티)가 진행할 수 있도록 `tools/translate_helper.py`로 씬 단위 작업 파일을 준비해둠 (`2_translated/script_wip/`, `2_translated/skit_wip/`). 사용법은 스크립트 상단 docstring 참고
+- [ ] `Script.csv`(본편 대사, 16,626줄) / `Skit.csv`(스킷 대사, 34,255줄) — **AI가 전체 번역하지 않기로 결정**. 실제 번역 주체(사용자 본인 또는 커뮤니티)가 진행할 수 있도록 `tools/translate_helper.py`로 씬 단위 작업 파일을 준비해둠 (`2_translated/script_wip/`, `2_translated/skit_wip/`). 사용법은 스크립트 상단 docstring 참고. 예시로 `skit_wip/0000.dat.csv`, `0001.dat.csv` 두 씬만 샘플 번역해둠(형식·말투 참고용)
 - [ ] 아츠 개별 이름은 `ArtsDataPack.csv`/`EnemyParam_Skills.csv` 번역 시 이미 확정됨 (615줄, 68개 중복 명칭 상호 검증 완료)
 
 ## 참고 자료
