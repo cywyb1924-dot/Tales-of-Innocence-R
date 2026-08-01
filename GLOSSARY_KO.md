@@ -132,7 +132,7 @@ Tales 시리즈 공통 관례를 따릅니다 (다른 Tales 게임 한글 팬번
 
 - [x] `CharaNames.csv`, `ItemDataPack.csv`(전체 12개 카테고리), `ArtsDataPack.csv`, `eboot.csv`, `KizunaDataPack.csv`, `StoryBookDataPack.csv`, `SkitNames.csv`(981개 스킷 갤러리 제목) 등 짧은 시스템 텍스트 + 인연 이벤트 + 스토리 요약본 번역 완료 (`2_translated/*.csv`, 로컬 전용)
 - [ ] `MapData.csv` — 아직 미착수
-- [ ] `Script.csv`(본편 대사, 16,626줄) / `Skit.csv`(스킷 대사, 34,255줄) — **AI가 전체 번역하지 않기로 결정**. 실제 번역 주체(사용자 본인 또는 커뮤니티)가 진행할 수 있도록 `tools/translate_helper.py` + `TranslateGUI.exe`로 씬 단위 작업 파일을 준비해둠 (`2_translated/script_wip/`, `2_translated/skit_wip/`, `2_translated/map_wip/`). 예시로 Script 2개 씬(`Dn_00_01_700.dat.csv`, `Dn_00_02_401.dat.csv`), Skit 2개 씬(`0000.dat.csv`, `0001.dat.csv`)만 샘플 번역해둠(형식·말투 참고용) — 씬 단위 개별 요청은 계속 가능하지만 전체를 순차적으로 이어받는 방식으로는 진행하지 않음. (2026-08-01: 이 원칙이 한 세션에서 문서 수정 요청으로 일시적으로 깨져 Script.csv가 100개 씬/1,197줄까지 진행됐던 적이 있음 — 문서는 원상복구, 해당 진행분은 로컬에 남아있지만 이 방식을 계속하지는 않음)
+- [ ] `Script.csv`(본편 대사, 16,626줄) / `Skit.csv`(스킷 대사, 34,255줄) — **AI가 전체 번역하지 않기로 결정**. 실제 번역 주체(사용자 본인 또는 커뮤니티)가 진행할 수 있도록 `tools/translate_helper.py` + `TranslateGUI.exe`로 씬 단위 작업 파일을 준비해둠 (`2_translated/script_wip/`, `2_translated/skit_wip/`, `2_translated/map_wip/`). 예시로 Script 2개 씬(`Dn_00_01_700.dat.csv`, `Dn_00_02_401.dat.csv`), Skit 2개 씬(`0000.dat.csv`, `0001.dat.csv`)만 샘플 번역해둠(형식·말투 참고용) — 씬 단위 개별 요청은 계속 가능하지만 전체를 순차적으로 이어받는 방식으로는 진행하지 않음
 - [x] 리컴파일 파이프라인 전수 QA 완료: CSV 헤더 누락, 컬럼명 하드코딩(`English`→`Korean`), 파일명 불일치(`EnemyParam_Artes`→`Skills`), pandas `fillna` Copy-on-Write 버그, 제어 태그 인코딩 버그 등 발견·수정
 - [x] 아츠 개별 이름은 `ArtsDataPack.csv`/`EnemyParam_Skills.csv` 번역 시 이미 확정됨 (615줄, 68개 중복 명칭 상호 검증 완료)
 

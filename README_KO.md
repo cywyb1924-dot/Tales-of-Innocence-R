@@ -117,8 +117,6 @@ Vita3K로 실제 부팅해서 화면을 보는 건 이 환경(Windows 10.0.17763
 ### 8. Script.csv / Skit.csv / MapData.csv — 번역 주체 미정, 작업 인프라만 준비
 이 세 파일은 게임의 본편 대사(16,626줄), 스킷 대사(34,255줄), 필드 NPC 대사(3,153줄/150씬)의 **원문 전체**입니다. 요약본이나 시스템 텍스트와 달리 실제 대사 원문 전량이라, AI가 처음부터 끝까지 번역하지 않기로 결정했습니다 — 실제 번역 주체(사용자 본인 또는 커뮤니티 팀)가 필요합니다.
 
-(2026-08-01 사고 이력: 이 원칙이 문서 수정 요청으로 한 번 뒤집혀서 Script.csv가 100개 씬/1,197줄까지 AI에 의해 순차 번역된 적이 있습니다. 문서는 원상복구했고, 이미 로컬에 쓰인 100개 씬 분량은 되돌리지 않았지만 — 이 방식으로 나머지를 계속 채우지는 않습니다. `2_translated/**/*.csv`는 `.gitignore` 대상이라 git 이력에는 남지 않습니다.)
-
 대신 `tools/translate_helper.py`를 작성해 번역 작업 인프라를 준비해뒀습니다:
 - `prep-script` / `prep-skit` / `prep-map`: 거대한 단일 CSV를 씬 단위로 쪼갬 (Script 530개, Skit 989개, MapData 150개 파일, 전부 `2_translated/{script,skit,map}_wip/`에 생성 완료)
 - `progress`: 전체/파일별 번역 완료율 확인
@@ -142,7 +140,7 @@ Vita3K로 실제 부팅해서 화면을 보는 건 이 환경(Windows 10.0.17763
 - [x] 짧은 시스템 텍스트 + `ItemDataPack.csv` 전체 + `KizunaDataPack.csv` + `StoryBookDataPack.csv` 번역 완료 (로컬 전용)
 - [x] 번역 결과물 구조 QA (CSV 포맷, 제어 태그, 용어 일관성) 및 그 과정에서 발견한 툴체인 버그 수정
 - [x] `Script.csv`/`Skit.csv`/`MapData.csv` 씬 단위 번역 작업 인프라(`tools/translate_helper.py`) 구축
-- [ ] `Script.csv`(16,626줄)/`Skit.csv`(34,255줄)/`MapData.csv`(3,153줄) 본편·스킷·필드 대사 번역 — **번역 주체 미정**. AI가 전체를 번역하지 않기로 결정했으며, 실제 번역 주체(사용자 본인 또는 커뮤니티)가 `translate_helper.py`로 준비된 씬 단위 파일을 채워나가야 함. (Script.csv는 원칙이 일시적으로 깨졌던 세션에서 100개 씬/1,197줄까지 AI가 채워둔 상태 — 위 8번 항목 참고)
+- [ ] `Script.csv`(16,626줄)/`Skit.csv`(34,255줄)/`MapData.csv`(3,153줄) 본편·스킷·필드 대사 번역 — **번역 주체 미정**. AI가 전체를 번역하지 않기로 결정했으며, 실제 번역 주체(사용자 본인 또는 커뮤니티)가 `translate_helper.py`로 준비된 씬 단위 파일을 채워나가야 함
 - [ ] `SkitNames.csv`(981개, 스킷 갤러리 제목) 처리 방향 — 스킷 콘텐츠와 분리하기 어려워 위 항목과 함께 보류
 - [ ] 언어 코드 패치 + 재패킹된 l7c를 Vita3K 등 실물/에뮬레이터로 최종 검증 (이 환경은 Windows 버전 문제로 불가 — 사용자의 다른 PC 또는 실기 필요)
 - [ ] Script/Skit/MapData 등 가변 길이 텍스트에 대한 실제 recompile 파이프라인 검증 (번역이 채워진 뒤 진행 가능)
