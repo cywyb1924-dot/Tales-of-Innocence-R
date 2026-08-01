@@ -36,7 +36,7 @@ def read_shopnames_csv(path:str):
   df_translations['StructId'] = df_translations['StructId'].astype(int)
   df_translations['Eng'] = df_translations['Eng'].str.replace('<', '{')
   df_translations['Eng'] = df_translations['Eng'].str.replace('>', '}')
-  df_translations['Eng'].fillna('', inplace=True)
+  df_translations['Eng'] = df_translations['Eng'].fillna('')
   return df_translations
 
 def insert_shopname(file_path:str, df_translations):

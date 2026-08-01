@@ -56,7 +56,7 @@ def read_battlebook_csv(path:str):
   df_translations = pd.read_csv(path, delimiter=',', encoding='utf-8')
   df_translations.columns = columns
   df_translations['StructId'] = df_translations['StructId'].astype(int)
-  df_translations['Eng'].fillna('', inplace=True)
+  df_translations['Eng'] = df_translations['Eng'].fillna('')
   return df_translations
 
 def insert_battlebook(file_path:str, df_translations):

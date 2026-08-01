@@ -33,10 +33,10 @@ def extract_enemies(l7cdir, outputdir):
 def recompile_enemies(l7cdir, csvdir, outputdir):
 #open the csv
     with open(csvdir / 'EnemyParam_Names.csv', 'r', encoding='utf-8', newline='') as f:
-        enemies_names = read_csv_data(f, 'is', ['#', 'English'])
-        
-    with open(csvdir / 'EnemyParam_Artes.csv', 'r', encoding='utf-8', newline='') as f:
-        enemies_artes = read_csv_data(f, 'is', ['#', 'English'])
+        enemies_names = read_csv_data(f, 'is', ['#', 'Korean'])
+
+    with open(csvdir / 'EnemyParam_Skills.csv', 'r', encoding='utf-8', newline='') as f:
+        enemies_artes = read_csv_data(f, 'is', ['#', 'Korean'])
 
 #open the original dat        
     with open(l7cdir / '_Data/System/EnemyParam.dat', 'rb') as f:

@@ -34,7 +34,7 @@ def extract_chara_styles(l7cdir, outputdir):
 def recompile_chara_styles(l7cdir, csvdir, outputdir):
 #open the csv
     with open(csvdir / 'CharaStyleDataPack.csv', 'r', encoding='utf-8', newline='') as f:
-        styles = read_csv_data(f, 'is', ['#', 'English'])
+        styles = read_csv_data(f, 'is', ['#', 'Korean'])
 
 #open the dat        
     with open(l7cdir / '_Data/System/CharaStyleDataPack.dat', 'rb') as f:
