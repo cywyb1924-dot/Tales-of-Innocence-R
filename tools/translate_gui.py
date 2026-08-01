@@ -400,18 +400,43 @@ class Handler(BaseHTTPRequestHandler):
             self.send_error(404)
 
 
+DEFAULT_PORT = 8765
+
+
 def main():
-    server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
-    port = server.server_address[1]
+    server = None
+    port = DEFAULT_PORT
+    for attempt in range(20):
+        try:
+            server = ThreadingHTTPServer(('127.0.0.1', port), Handler)
+            break
+        except OSError:
+            port += 1
+    if server is None:
+        print('사용 가능한 포트를 찾지 못했습니다. 프로그램을 다시 실행해보세요.')
+        input('엔터를 누르면 창이 닫힙니다...')
+        return
+
     url = f'http://127.0.0.1:{port}/'
-    print(f'번역 작업 GUI 서버 시작: {url}')
-    print('창을 닫으려면 이 콘솔 창을 닫으세요.')
+    print('=' * 50)
+    print(f'번역 작업 GUI 서버가 시작되었습니다.')
+    print(f'주소: {url}')
+    print('브라우저가 자동으로 열리지 않으면 위 주소를 직접 열어주세요.')
+    print('이 창을 닫으면 서버도 함께 종료됩니다.')
+    print('=' * 50)
     threading.Timer(0.5, lambda: webbrowser.open(url)).start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
+    except Exception as e:
+        print(f'오류 발생: {e}')
+        input('엔터를 누르면 창이 닫힙니다...')
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f'예상치 못한 오류로 종료되었습니다: {e}')
+        input('엔터를 누르면 창이 닫힙니다...')
