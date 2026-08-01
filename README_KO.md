@@ -99,10 +99,36 @@ Vita3K로 실제 부팅해서 화면을 보는 건 이 환경(Windows 10.0.17763
 
 즉 **PS Vita 시스템에 완전한 한글 폰트가 실제로 내장되어 있음을 추측이 아니라 실물 데이터로 증명**했습니다. 자세한 과정은 [`tools/toir/font_research/README.md`](tools/toir/font_research/README.md) 참고.
 
+### 7. 짧은 시스템 텍스트 + 인연 이벤트 + 스토리 요약본 번역 — 완료
+`2_translated/*.csv`에 로컬로만 보관 중입니다(게임 원문을 상당량 포함하고 있어 git에는 커밋하지 않음 — `.gitignore`가 `2_translated/**/*.csv`를 막고 있습니다). 완료된 항목:
+
+- **`ItemDataPack.csv` 전체 12개 카테고리** (1,081개 아이템, 2,162행): Use, Weapon, Armor, Helm, Acc, Material, Event, DLC, CodeName, Recipe, RaveAbility, OperationCond
+- **지명/캐릭터명/시스템 텍스트**: `Locations*.csv`, `ShopDataPack.csv`, `SuccessionData.csv`, `MissionData.csv`, `OperationDataPack.csv`, `CharaStyleDataPack.csv`, `TutorialData.csv`, `CharaNames.csv`(205개), `Movie.csv`, `EnemyParam_Names/Skills.csv`, `BattleBookDataPack.csv`, `CharaAbility.csv`, `ArtsDataPack.csv`(615행), `eboot.csv`(603개 UI/시스템 문자열)
+- **`KizunaDataPack.csv`**(640줄) — 파티원 간 호감도별 반응 대사. 이 작업으로 캐릭터별 말투 패턴을 처음으로 명확히 확정함 (에르마나=경상도 사투리, 큐큐=서툰 말투 등 — `GLOSSARY_KO.md` 참고)
+- **`StoryBookDataPack.csv`**(808줄, 93개 챕터) — 게임 내장 "지금까지의 이야기" 요약 메뉴. 전체 스토리를 도입부~엔딩까지 압축 요약한 형태
+
+번역 후 구조 검증(QA)도 별도로 진행했습니다:
+- CSV 콤마 이스케이프 누락으로 컬럼이 깨진 사례 다수 발견·수정 (번역문에 콤마가 포함된 행을 따옴표 처리 안 한 것이 원인)
+- `ItemDataPack.csv`가 12개 카테고리 파일로 나뉘어 있어 실제 리컴파일 스크립트가 인식 못 하는 문제 발견 → 단일 파일로 병합
+- 제어 태그(`{blue}`, `{remap_l1}` 등) 보존 여부, 숫자 표기, 바이트 길이 한도(43/145바이트) 전수 검사 — 이상 없음
+- 캐릭터/지명 한글 표기 불일치 발견·수정 (예: 「바르칸」/「발칸」 혼용, 「풀피의 숲」/「프루피 숲」 혼용)
+- **툴체인 자체 버그 발견·수정**: `lib_lifebottle.py`의 `text_to_bytes()`가 `{icon:0x...}`처럼 "0x" 접두사 붙은 16진수를 처리 못 하고 크래시하던 버그, `{remap_l1}` 등 버튼 리맵 태그를 아예 지원 못 하던 버그. 근본 원인은 `text.py`의 `_FIXED_CC` 딕셔너리가 버튼 태그 키에 `remap_` 접두사를 빠뜨린 것이었음(원래 인코딩 경로에도 있던 버그, `eboot.csv`엔 해당 태그가 없어서 지금까지 드러나지 않았음) — 수정 후 왕복 인코딩/디코딩 테스트로 검증 완료
+
+### 8. Script.csv / Skit.csv / MapData.csv — 번역 주체 미정, 작업 인프라만 준비
+이 세 파일은 게임의 본편 대사(16,626줄), 스킷 대사(34,255줄), 필드 NPC 대사(3,153줄/150씬)의 **원문 전체**입니다. 요약본이나 시스템 텍스트와 달리 실제 대사 원문 전량이라, AI가 처음부터 끝까지 번역하지 않기로 결정했습니다 — 실제 번역 주체(사용자 본인 또는 커뮤니티 팀)가 필요합니다.
+
+대신 `tools/translate_helper.py`를 작성해 번역 작업 인프라를 준비해뒀습니다:
+- `prep-script` / `prep-skit` / `prep-map`: 거대한 단일 CSV를 씬 단위로 쪼갬 (Script 530개, Skit 989개, MapData 150개 파일, 전부 `2_translated/{script,skit,map}_wip/`에 생성 완료)
+- `progress`: 전체/파일별 번역 완료율 확인
+- `check {script|skit|map}`: 제어 태그 누락, 캐릭터명 표기 일관성(용어집 기준) 자동 검사
+- `merge-script` / `merge-skit` / `merge-map`: 완성된 씬 파일들을 리컴파일 파이프라인이 요구하는 단일 CSV(`Story.csv`, `Skit.csv`, `MapData.csv`)로 재조립
+
+예시로 `skit_wip/0000.dat.csv`, `0001.dat.csv` 두 씬만 샘플 번역해뒀습니다(형식·말투 참고용). `SkitNames.csv`(981개, 스킷 갤러리 제목)는 스킷 내용과 분리하기 어려워 이 그룹과 함께 보류 중입니다.
+
 ## ⚠️ 이 환경에서 근본적으로 확인할 수 없는 것
 - **실제 게임이 패치된 파일을 로드하는지**: 이 환경의 Windows 버전이 너무 오래돼(10.0.17763) Vita3K가 실행되지 않아, 파일 포맷 레벨 정합성까지만 검증했습니다.
 - **언어 코드 패치 적용 후 게임이 실제로 `kr0.pvf`를 로드해서 한글을 그리는지**: 시스템에 한글 폰트가 있다는 것과, `sceFontFindOptimumFont`에 언어코드=한국어를 넘겼을 때 게임이 그걸 실제로 받아 렌더링까지 성공하는지는 별개 문제입니다. 최종 확인은 게임 실행이 필요합니다.
-- Script.csv/Skit.csv 같은 **가변 길이** 텍스트는 아직 이 파이프라인으로 시험 안 해봤습니다 (고정 크기 아이템 텍스트로만 검증).
+- Script.csv/Skit.csv/MapData.csv 같은 **가변 길이** 텍스트는 아직 이 파이프라인으로 실제 재컴파일까지 시험 안 해봤습니다 (고정 크기 아이템 텍스트로만 end-to-end 검증됨). 번역 자체가 아직 이 세 파일에 대해서는 진행되지 않았기 때문입니다.
 
 ## 다음 할 일
 - [x] 게임 덤프 복호화 (PC만으로 완료)
@@ -111,9 +137,13 @@ Vita3K로 실제 부팅해서 화면을 보는 건 이 환경(Windows 10.0.17763
 - [x] `extract.py` 실행해 `1_extracted/`에 일본어 원문 CSV 생성 (24개 CSV, 5만+ 줄)
 - [x] recompile → l7c 제자리 패치 → xdelta 패치 생성 파이프라인 검증 (아이템 텍스트 1건)
 - [x] PS Vita 시스템에 한글 폰트가 실제로 존재하는지 정식 펌웨어에서 직접 확인 (11,172자 전체 커버)
-- [ ] 한글 번역 워크플로우 구성 (자체 스프레드시트 or 로컬 CSV 직접 편집) — **보류 중, 사용자와 번역 주체 재상의 예정** (스킷/스토리는 진행 전 재확인하기로 함)
+- [x] 짧은 시스템 텍스트 + `ItemDataPack.csv` 전체 + `KizunaDataPack.csv` + `StoryBookDataPack.csv` 번역 완료 (로컬 전용)
+- [x] 번역 결과물 구조 QA (CSV 포맷, 제어 태그, 용어 일관성) 및 그 과정에서 발견한 툴체인 버그 수정
+- [x] `Script.csv`/`Skit.csv`/`MapData.csv` 씬 단위 번역 작업 인프라(`tools/translate_helper.py`) 구축
+- [ ] `Script.csv`(16,626줄)/`Skit.csv`(34,255줄)/`MapData.csv`(3,153줄) 본편·스킷·필드 대사 번역 — **번역 주체 미정**. AI가 전체를 번역하지 않기로 결정했으며, 실제 번역 주체(사용자 본인 또는 커뮤니티)가 `translate_helper.py`로 준비된 씬 단위 파일을 채워나가야 함
+- [ ] `SkitNames.csv`(981개, 스킷 갤러리 제목) 처리 방향 — 스킷 콘텐츠와 분리하기 어려워 위 항목과 함께 보류
 - [ ] 언어 코드 패치 + 재패킹된 l7c를 Vita3K 등 실물/에뮬레이터로 최종 검증 (이 환경은 Windows 버전 문제로 불가 — 사용자의 다른 PC 또는 실기 필요)
-- [ ] Script/Skit 등 가변 길이 텍스트에 대한 패치 전략 검증
+- [ ] Script/Skit/MapData 등 가변 길이 텍스트에 대한 실제 recompile 파이프라인 검증 (번역이 채워진 뒤 진행 가능)
 
 ## 참고
 - 원본 영문 패치 프로젝트: https://github.com/lifebottle/Tales-of-Innocence-R
