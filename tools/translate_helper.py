@@ -226,6 +226,15 @@ def progress():
 
 # ------------------------------------------------------------------ check --
 
+# Longest-name-first alternation so e.g. "バルカン"(Balkan) matches as one
+# name instead of also spuriously matching "ルカ"(Luka), which is literally
+# a substring of it -- a plain `name in jp` check would flag every バルカン
+# line as also needing 루카 in the translation.
+_GLOSSARY_NAME_RE = re.compile(
+    '|'.join(re.escape(k) for k in sorted(GLOSSARY_NAMES, key=len, reverse=True))
+)
+
+
 def check(target):
     wip_dir = WORKDIR / f'{target}_wip'
     if not wip_dir.exists():
@@ -243,8 +252,9 @@ def check(target):
                 ktags = sorted(TAG_RE.findall(kr))
                 if jtags != ktags:
                     issues.append((fpath.name, i, 'TAG MISMATCH', jtags, ktags))
-                for jname, kname in GLOSSARY_NAMES.items():
-                    if jname in jp and kname not in kr:
+                for jname in set(_GLOSSARY_NAME_RE.findall(jp)):
+                    kname = GLOSSARY_NAMES[jname]
+                    if kname not in kr:
                         issues.append((fpath.name, i, f'expected "{kname}" (for {jname})', kr[:50]))
     print(f'{len(issues)} issue(s) found')
     for it in issues[:200]:
