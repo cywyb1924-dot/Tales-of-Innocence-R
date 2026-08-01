@@ -14,14 +14,21 @@ toir/formats/skits/recompile.py reads 2_translated/Skit.csv).
 This script only prepares/checks/merges files -- it does not translate
 anything itself. Fill in the "Korean" column of the per-scene files by hand.
 
+Also covers MapData.csv (field/dungeon NPC dialogue), same shape as Script.csv
+but with an extra Section column (toir/formats/mapdata/recompile.py reads
+2_translated/MapData.csv with header Path,Section,#,Speaker,Japanese,Korean).
+
 Usage:
     python translate_helper.py prep-script    # split Script.csv into scenes
     python translate_helper.py prep-skit      # split Skit.csv into skits
+    python translate_helper.py prep-map       # split MapData.csv into scenes
     python translate_helper.py progress       # show completion %
     python translate_helper.py check script   # validate tags/glossary
     python translate_helper.py check skit
+    python translate_helper.py check map
     python translate_helper.py merge-script   # rebuild Story.csv for recompile
     python translate_helper.py merge-skit     # rebuild Skit.csv for recompile
+    python translate_helper.py merge-map      # rebuild MapData.csv for recompile
 """
 import argparse
 import csv
@@ -97,6 +104,53 @@ def merge_script():
     print(f'merged {total} lines into {out_path} ({done} translated, {total - done} still empty)')
 
 
+# ------------------------------------------------------------------- map --
+
+def prep_map():
+    out_dir = WORKDIR / 'map_wip'
+    out_dir.mkdir(parents=True, exist_ok=True)
+    scenes = {}
+    with open(EXTRACTED / 'MapData.csv', encoding='utf-8', newline='') as f:
+        # MapData.csv has no header row (see toir/formats/mapdata/extract.py)
+        for row in csv.DictReader(f, fieldnames=['path', 'section', 'id', 'speaker', 'text']):
+            scenes.setdefault(row['path'], []).append(row)
+
+    written = 0
+    for path, rows in scenes.items():
+        outpath = out_dir / (safe_name(path) + '.csv')
+        if outpath.exists():
+            continue
+        with open(outpath, 'w', encoding='utf-8', newline='') as f:
+            w = csv.writer(f)
+            w.writerow(['Path', 'Section', '#', 'Speaker', 'Japanese', 'Korean'])
+            for row in rows:
+                w.writerow([path, row['section'], row['id'], row['speaker'], row['text'], ''])
+        written += 1
+    print(f'wrote {written} new scene files to {out_dir} ({len(scenes)} scenes total, '
+          f'{len(scenes) - written} already existed and were left untouched)')
+
+
+def merge_map():
+    src_dir = WORKDIR / 'map_wip'
+    if not src_dir.exists():
+        print(f'{src_dir} does not exist -- run prep-map first')
+        return
+    out_path = WORKDIR / 'MapData.csv'
+    total = done = 0
+    with open(out_path, 'w', encoding='utf-8', newline='') as out:
+        w = csv.writer(out)
+        w.writerow(['Path', 'Section', '#', 'Speaker', 'Japanese', 'Korean'])
+        for fpath in sorted(src_dir.glob('*.csv')):
+            with open(fpath, encoding='utf-8', newline='') as f:
+                for row in csv.DictReader(f):
+                    total += 1
+                    if row['Korean'].strip():
+                        done += 1
+                    w.writerow([row['Path'], row['Section'], row['#'], row['Speaker'],
+                                row['Japanese'], row['Korean']])
+    print(f'merged {total} lines into {out_path} ({done} translated, {total - done} still empty)')
+
+
 # ------------------------------------------------------------------ skit --
 
 def prep_skit():
@@ -147,7 +201,8 @@ def merge_skit():
 # -------------------------------------------------------------- progress --
 
 def progress():
-    for label, wip_dir in [('Script', WORKDIR / 'script_wip'), ('Skit', WORKDIR / 'skit_wip')]:
+    for label, wip_dir in [('Script', WORKDIR / 'script_wip'), ('Skit', WORKDIR / 'skit_wip'),
+                           ('MapData', WORKDIR / 'map_wip')]:
         if not wip_dir.exists():
             print(f'{label}: not prepped yet (run prep-{label.lower()})')
             continue
@@ -201,18 +256,22 @@ def main():
     sub = p.add_subparsers(dest='cmd', required=True)
     sub.add_parser('prep-script', help='split 1_extracted/Script.csv into per-scene files')
     sub.add_parser('prep-skit', help='split 1_extracted/Skit.csv into per-skit files')
+    sub.add_parser('prep-map', help='split 1_extracted/MapData.csv into per-scene files')
     sub.add_parser('merge-script', help='rebuild 2_translated/Story.csv from script_wip/')
     sub.add_parser('merge-skit', help='rebuild 2_translated/Skit.csv from skit_wip/')
+    sub.add_parser('merge-map', help='rebuild 2_translated/MapData.csv from map_wip/')
     sub.add_parser('progress', help='show translation completion percentage')
     c = sub.add_parser('check', help='validate control tags and glossary consistency')
-    c.add_argument('target', choices=['script', 'skit'])
+    c.add_argument('target', choices=['script', 'skit', 'map'])
     args = p.parse_args()
 
     {
         'prep-script': prep_script,
         'prep-skit': prep_skit,
+        'prep-map': prep_map,
         'merge-script': merge_script,
         'merge-skit': merge_skit,
+        'merge-map': merge_map,
         'progress': progress,
     }.get(args.cmd, lambda: check(args.target))()
 
