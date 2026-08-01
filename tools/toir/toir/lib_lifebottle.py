@@ -1,6 +1,7 @@
 import struct
 import re
 import string
+from .text import encode_control_code
 COMMON_TAG = r"(\{[\w/]+:?\w+\})"
 HEX_TAG = r"(\{[0-9A-F]{2}\})"
 PRINTABLE_CHARS = "".join(
@@ -58,6 +59,11 @@ def text_to_bytes(text:str):
         elif re.match(COMMON_TAG, t):
             tag, param, *_ = t[1:-1].split(":") + [None]
             tag = tag.lower()
+            # decode_text() (text.py) emits hex params with a leading "0x"
+            # (e.g. {icon:0x0983}); strip it so the fixed-width zero-padding
+            # below operates on plain hex digits like it expects.
+            if param and param.lower().startswith('0x'):
+              param = param[2:]
 
             #Handle cases like <icon:0CBD>
             if tag in tags['Code']:
@@ -72,21 +78,27 @@ def text_to_bytes(text:str):
 
               elif tag in ['control41', 'unknown41']:
                 param_padded = '0' * (2 - len(param)) + param
-                
+
               #Convert C3D tb 0C3D to b'\x3D\x0C'
               #[::-1] will reverse the bytes for little endian
               byte_param = bytes.fromhex(param_padded)[::-1]
               output += byte_tag + byte_param
 
-              
+
             #Handle cases like <Red>
             elif tag in tags['Color']:
               bytes_color = bytes.fromhex(tags['Code']['color']) + bytes.fromhex(tags['Color'][tag])
               output += bytes_color
-              
-              
+
             else:
-              print(f'Warning case not handled: tag: {tag}')
+              # Fall back to text.py's encode_control_code, which covers
+              # everything this dictionary doesn't: {remap_*}, {variable},
+              # {fixed}, {triverse}, {xNN}, {item:...}, {number:...}, and
+              # the named {icon_*} forms.
+              try:
+                output += encode_control_code(t[1:-1])
+              except ValueError:
+                print(f'Warning case not handled: tag: {tag}')
 
         # Actual text
         elif t == "\n":

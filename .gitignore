@@ -1,4 +1,4 @@
-2_translated/*.csv
+2_translated/**/*.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

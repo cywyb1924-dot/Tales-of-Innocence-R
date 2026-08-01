@@ -148,7 +148,7 @@ _FIXED_CC |= {
     key: b'@\x40@' + struct.pack('<H', index) for index, key in _ICONS_40.items()
 }
 _FIXED_CC |= {
-    key: b'@\x41@' + struct.pack('<B', index) for index, key in _BUTTONS_41.items()
+    'remap_' + key: b'@\x41@' + struct.pack('<B', index) for index, key in _BUTTONS_41.items()
 }
 _FIXED_CC |= {
     key: b'@\x01@' + struct.pack('<B', index) for index, key in _COLORS.items()
