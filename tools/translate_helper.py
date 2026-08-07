@@ -95,7 +95,7 @@ def merge_script():
         w = csv.writer(out)
         w.writerow(['File', '#', 'Speaker', 'Japanese', 'Korean'])
         for fpath in sorted(src_dir.glob('*.csv')):
-            with open(fpath, encoding='utf-8', newline='') as f:
+            with open(fpath, encoding='utf-8-sig', newline='') as f:
                 for row in csv.DictReader(f):
                     total += 1
                     if row['Korean'].strip():
@@ -141,7 +141,7 @@ def merge_map():
         w = csv.writer(out)
         w.writerow(['Path', 'Section', '#', 'Speaker', 'Japanese', 'Korean'])
         for fpath in sorted(src_dir.glob('*.csv')):
-            with open(fpath, encoding='utf-8', newline='') as f:
+            with open(fpath, encoding='utf-8-sig', newline='') as f:
                 for row in csv.DictReader(f):
                     total += 1
                     if row['Korean'].strip():
@@ -188,7 +188,7 @@ def merge_skit():
         w = csv.writer(out)
         w.writerow(['File', 'Field', 'Index', 'Speakers', 'Japanese', 'Korean'])
         for fpath in sorted(src_dir.glob('*.csv')):
-            with open(fpath, encoding='utf-8', newline='') as f:
+            with open(fpath, encoding='utf-8-sig', newline='') as f:
                 for row in csv.DictReader(f):
                     total += 1
                     if row['Korean'].strip():
@@ -210,7 +210,7 @@ def progress():
         for fpath in sorted(wip_dir.glob('*.csv')):
             files_total += 1
             file_lines = file_done = 0
-            with open(fpath, encoding='utf-8', newline='') as f:
+            with open(fpath, encoding='utf-8-sig', newline='') as f:
                 for row in csv.DictReader(f):
                     total += 1
                     file_lines += 1
@@ -242,7 +242,7 @@ def check(target):
         return
     issues = []
     for fpath in sorted(wip_dir.glob('*.csv')):
-        with open(fpath, encoding='utf-8', newline='') as f:
+        with open(fpath, encoding='utf-8-sig', newline='') as f:
             for i, row in enumerate(csv.DictReader(f), start=2):
                 jp = row.get('Japanese', '')
                 kr = row.get('Korean', '')
