@@ -537,6 +537,43 @@ incorrect`) 방금 압축 해제한 데이터를 전부 삭제하고 설치를 �
 `3_patched/ready_to_use/`, `3_patched/loose_files/_Data/Font/`,
 그리고 재생성된 `.l7c`/xdelta 안에 반영돼 있음.
 
+### 3. 🔴 같은 클래스의 버그, `eboot.bin`에도 있었음: xdelta 소스가 사실
+   이미 1바이트 패치된 상태였음
+
+사용자가 xdelta 배포판(`eboot_ko.xdelta`)을 **진짜 원본** `eboot.bin`
+(Vita3K로 원본 zip을 방금 새로 설치해서 얻은, 한 번도 손 안 댄 파일)에
+적용하자 `xdelta3: target window checksum mismatch` 에러가 남
+(`toidata_release.l7c` 쪽은 문제없이 적용됨). 사용자가 그 "진짜 원본"
+`eboot.bin`을 `0_01/PCSG00009/`에 복사해준 걸 바이트 단위로 대조한 결과:
+
+**우리가 이번 세션 내내 "원본"으로 취급해온 `eboot.bin`
+(`live_backup/eboot.bin`, sha256 `322ef1f3...`)은 사실 진짜 원본이
+아니라, 오프셋 `0x78E2` 딱 1바이트가 이미 패치돼 있던 것이었습니다** —
+`5F F0 01 0E`(`movs.w lr, #1` = SCE_FONT_LANGUAGE_JAPANESE) →
+`5F F0 03 0E`(`movs.w lr, #3` = SCE_FONT_LANGUAGE_KOREAN). 바로
+`tools/toir/font_research/README.md`에 문서화된 그 언어 코드 패치
+자체입니다(ELF 기준 오프셋 `0x68E0` + `eboot.bin`의 `0x1000`바이트
+헤더 = `0x78E0`, 오차 2바이트는 헤더 크기 가정 차이로 추정). 즉
+**`_Data/Font/FontDataNormal.pgf`와 완전히 같은 클래스의 문제** —
+예전(이번 멀티세션보다 훨씬 전) 세션에서 이미 언어 코드 패치까지
+적용해둔 로컬 파일을, 이번 세션 내내 "원본"인 줄 알고 그 위에 텍스트
+번역만 얹어서 작업해온 것.
+
+**해결**: 사용자가 준 진짜 원본 `eboot.bin`에 (1) `0x78E2` 1바이트
+패치(`01`→`03`) + (2) `recompile_eboot()`로 텍스트 번역을 적용한 뒤,
+608개 포인터 전부 왕복 검증 통과 확인. 이 진짜 원본을 기준으로
+`eboot_ko.xdelta`를 다시 만들어서 `3_patched/xdelta_release/`,
+`ready_to_use/`, `loose_files/`에 반영. **사용자에게 새 `eboot_ko.xdelta`를
+전달하고 재시도를 기다리는 중** — 다음 세션에서 성공 여부부터 확인할 것.
+
+**교훈**: 이 프로젝트에서 "로컬 Vita3K 설치 폴더에 있는 파일 = 원본"이라는
+가정은 위험합니다 — `_Data/Font/FontDataNormal.pgf`도, `eboot.bin`도 둘 다
+이번 세션 훨씬 이전의 미기록 작업으로 이미 손이 타 있었습니다. 앞으로
+"원본"이 필요할 때는 **반드시 사용자의 원본 덤프 zip(`0_00/PCSG00009.zip`
+등)에서 새로 뽑거나, Vita3K로 그 zip을 새로 설치해서 얻은 파일**을 써야
+하며, 로컬에 이미 있는 설치 폴더의 파일을 무비판적으로 "원본"으로
+재사용하면 안 됨.
+
 ---
 
 ## 참고: 이 파일을 왜 만들었는지
