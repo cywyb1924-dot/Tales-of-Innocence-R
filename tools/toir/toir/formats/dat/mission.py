@@ -36,7 +36,7 @@ def extract_mission(l7cdir, outputdir):
 #New insertion with stewies method
 def read_mission_csv(path:str):
   columns = ['StructId', 'Type', 'Jap', 'Eng']
-  df_translations = pd.read_csv(path, delimiter=',', encoding='utf-8')
+  df_translations = pd.read_csv(path, delimiter=',', encoding='utf-8-sig')
   df_translations.columns = columns
   df_translations['StructId'] = df_translations['StructId'].astype(int)
   df_translations['Eng'] = df_translations['Eng'].str.replace('<', '{')

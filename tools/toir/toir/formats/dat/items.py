@@ -65,7 +65,7 @@ def extract_items(l7cdir, outputdir):
 
 def read_item_csv(csvdir):
     items = {}
-    with open(csvdir / 'ItemDataPack.csv', 'r', encoding='utf-8', newline='') as f:
+    with open(csvdir / 'ItemDataPack.csv', 'r', encoding='utf-8-sig', newline='') as f:
         reader = csv.DictReader(f, ['category', 'index', 'field', 'japanese', 'translation'])
         for row in reader:
             category = row['category']

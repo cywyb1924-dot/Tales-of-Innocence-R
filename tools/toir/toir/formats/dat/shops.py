@@ -31,7 +31,7 @@ def extract_shops(l7cdir, outputdir):
 #need to remove type and linenumber in csv reader
 def read_shopnames_csv(path:str):
   columns = ['StructId','Jap', 'Eng']
-  df_translations = pd.read_csv(path, delimiter=',', encoding='utf-8')
+  df_translations = pd.read_csv(path, delimiter=',', encoding='utf-8-sig')
   df_translations.columns = columns
   df_translations['StructId'] = df_translations['StructId'].astype(int)
   df_translations['Eng'] = df_translations['Eng'].str.replace('<', '{')
@@ -75,7 +75,7 @@ def insert_shopname(file_path:str, df_translations):
      
 
 def recompile_shop_names(l7cdir, csvdir, outputdir):
-    df_translations = read_shopnames_csv(csvdir / 'ShopNames.csv')
+    df_translations = read_shopnames_csv(csvdir / 'ShopDataPack.csv')
     end = '_Data/System/ShopDataPack.dat'
     original_path = l7cdir / end
     final_path = outputdir / end

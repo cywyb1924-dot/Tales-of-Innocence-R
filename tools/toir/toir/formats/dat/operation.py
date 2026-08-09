@@ -43,7 +43,7 @@ def extract_operation(l7cdir, outputdir):
 
 def read_operations_csv(path:str):
   columns = ['StructId', 'Line', 'Type','Jap', 'Eng']
-  df_translations = pd.read_csv(path, delimiter=',', encoding='utf-8')
+  df_translations = pd.read_csv(path, delimiter=',', encoding='utf-8-sig')
   df_translations.columns = columns
   df_translations['StructId'] = df_translations['StructId'].astype(int)
   df_translations['Eng'] = df_translations['Eng'].fillna('')
@@ -117,7 +117,7 @@ def insert_operations(file_path:str, df_translations):
             f.write(b'\x00' * rest)      
 
 def recompile_operations(l7cdir, csvdir, outputdir):
-    df_translations = read_operations_csv(csvdir / 'Operation.csv')
+    df_translations = read_operations_csv(csvdir / 'OperationDataPack.csv')
     end = '_Data/System/OperationDataPack.dat'
     original_path = l7cdir / end
     final_path = outputdir / end

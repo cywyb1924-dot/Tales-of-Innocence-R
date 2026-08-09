@@ -2,7 +2,7 @@ import struct
 import csv
 
 strings = {}
-with open('strings_ghidra.csv', 'r', encoding='utf-8', newline='') as f:
+with open('strings_ghidra.csv', 'r', encoding='utf-8-sig', newline='') as f:
     reader = csv.DictReader(f, ['location', 'value'])
     for row in reader:
         strings[int(row['location'], 16)] = {

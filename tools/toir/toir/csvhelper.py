@@ -64,5 +64,5 @@ def read_csv_data(f, format, col_names):
     return data
 
 def read_csv_file(path, format, col_names):
-    with open(path, 'r', newline='', encoding='utf-8') as f:
+    with open(path, 'r', newline='', encoding='utf-8-sig') as f:
         return read_csv_data(f)

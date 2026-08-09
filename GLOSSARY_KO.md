@@ -163,7 +163,7 @@ Tales 시리즈 공통 관례를 따릅니다 (다른 Tales 게임 한글 팬번
 - [x] `CharaNames.csv`, `ItemDataPack.csv`(전체 12개 카테고리), `ArtsDataPack.csv`, `eboot.csv`, `KizunaDataPack.csv`, `StoryBookDataPack.csv`, `SkitNames.csv`(981개 스킷 갤러리 제목) 등 짧은 시스템 텍스트 + 인연 이벤트 + 스토리 요약본 번역 완료 (`2_translated/*.csv`, 로컬 전용)
 - [x] `Script.csv`(본편 대사, 8,162줄, 씬 530개) — **2026-08-01 원칙 변경: AI(Claude)가 전담해서 나머지 씬을 끝까지 번역**. 사용자가 직접 107개 씬(1,352행)을 먼저 번역했고, 남은 423개 씬(6,810행)을 AI가 이어받아 완료 (2026-08-02). `2_translated/Story.csv`로 병합, 실전 recompile 파이프라인 검증 및 Vita3K 실기 테스트까지 완료
 - [x] `MapData.csv`(필드 대사, 3,153줄, 씬 150개) — **완료 (2026-08-07)**. AI 전담으로 전체 번역, `translate_helper.py check map` 0건, `2_translated/MapData.csv`로 병합 완료
-- [ ] `Skit.csv`(스킷 대사, 19,236줄, 씬 989개) — **2026-08-02 원칙 변경: AI(Claude)가 전담해서 번역 진행 중** (기존 "AI가 번역하지 않는다"는 원칙은 폐기됨). 샘플 2개 씬(`0000.dat.csv`, `0001.dat.csv`)은 형식·말투 참고용으로 이미 번역돼 있었고, 나머지 987개 씬을 AI가 배치 단위로 이어받아 진행 중
+- [ ] `Skit.csv`(스킷 대사, 19,236줄, 씬 989개) — **2026-08-02 원칙 변경: AI(Claude)가 전담해서 번역 진행 중** (기존 "AI가 번역하지 않는다"는 원칙은 폐기됨). 2026-08-07에 서브에이전트 병렬 번역 방식에 대한 우려로 355개 파일(36%) 시점에 잠시 중단했으나, 2026-08-08에 사용자 지시로 **메인 세션이 직접 번역하는 방식**(서브에이전트 위임 없음)으로 재개. 2026-08-08 세션 종료 시점 기준 420/989개 씬 완료(43.3%, 8,333/19,236행), 잔여 553개 파일(10,876행) — `2_translated/skit_wip/1320.dat.csv`부터 이어서 진행
 - [x] 리컴파일 파이프라인 전수 QA 완료: CSV 헤더 누락, 컬럼명 하드코딩(`English`→`Korean`), 파일명 불일치(`EnemyParam_Artes`→`Skills`), pandas `fillna` Copy-on-Write 버그, 제어 태그 인코딩 버그 등 발견·수정
 - [x] 아츠 개별 이름은 `ArtsDataPack.csv`/`EnemyParam_Skills.csv` 번역 시 이미 확정됨 (615줄, 68개 중복 명칭 상호 검증 완료)
 

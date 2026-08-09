@@ -36,62 +36,53 @@ def extract_chara_ability(l7cdir, outputdir):
             })
 
 
-def read_artes_csv(csvdir):
-    artes = {}
-    with open(csvdir / 'CharaAbility.csv', 'r', encoding='utf-8', newline='') as f:
-        reader = csv.DictReader(f, ['category', 'index', 'field', 'japanese', 'english'])
+def read_chara_ability_csv(csvdir):
+    """CharaAbility.csv (as actually written by extract_chara_ability, and as
+    it exists in 2_translated/) is a flat, header-less 4-column CSV:
+    index, field ('name'|'description'), japanese, korean -- NOT the 5-column
+    category/index/field/japanese/english layout that ArtsDataPack.csv uses.
+    (The previous version of this function -- read_artes_csv -- assumed the
+    ArtsDataPack.csv schema by mistake and crashed on real CharaAbility.csv
+    data with `int('name')`.)"""
+    abilities = {}
+    with open(csvdir / 'CharaAbility.csv', 'r', encoding='utf-8-sig', newline='') as f:
+        reader = csv.DictReader(f, ['index', 'field', 'japanese', 'korean'])
         for row in reader:
-            category = row['category']
-            if not category:
-                continue
-            category = int(category)
             index = int(row['index'])
             field = row['field']
-            english = row['english']
-            
-            if category not in artes:
-                artes[category] = {}
-            if index not in artes[category]:
-                artes[category][index] = {}
-            if field == 'name':
-                artes[category][index]['name'] = english
-            elif field == 'description':
-                artes[category][index]['description'] = english
+            korean = row['korean']
+            if index not in abilities:
+                abilities[index] = {}
+            if field in ('name', 'description'):
+                abilities[index][field] = korean
             else:
-                raise ValueError('unknown field in CharaAbility.csv')
-    #print(artes)
-    return artes
-
-def write_artes(category, section, artes):
-    count, = struct.unpack_from('<L', section, 0)
-    for i in range(count):
-        #print(artes[i]['name'])
-        #print(artes[i]['description'])
-        encode_section_text(section, artes[i]['name'], 0x17 + i * 0xC8, max_length=0x28,
-                            id=f'CharaAbility.csv:{category},{i},name')
-        encode_section_text(section, artes[i]['description'], 0x40 + i * 0xC8, max_length=0x89,
-                            id=f'CharaAbility.csv:{category},{i},description')
-
-def insert_artes(binary, artes):
-    newbinary = read_dat_header(binary)
-    sections = [bytearray(section) for section in read_sections(binary)]
-    for i in range(0, len(sections)):
-        if i in artes:
-            write_artes(i, sections[i], artes[i])
-            newbinary = append_section(newbinary, sections[i])
- 
-    assert(len(binary) == len(newbinary))
-    return newbinary
+                raise ValueError(f'unknown field "{field}" in CharaAbility.csv')
+    return abilities
 
 def recompile_chara_ability(l7cdir, csvdir, outputdir):
-    items = read_artes_csv(csvdir)
+    """CharaAbility.dat is a flat array (4-byte count header, then per-entry
+    name/description at fixed offsets 0x17/0x40 + i*0xC8) -- see
+    _extract_chara_abilities above. It has no DatFile section wrapper, so
+    (unlike ArtsDataPack.dat) this must NOT go through read_sections/
+    append_section."""
+    abilities = read_chara_ability_csv(csvdir)
     with open(l7cdir / '_Data/System/CharaAbility.dat', 'rb') as f:
-        binary = f.read()
-    binary = insert_artes(binary, items)
+        binary = bytearray(f.read())
+    count, = struct.unpack_from('<L', binary, 0)
+    for i in range(count):
+        ability = abilities.get(i)
+        if not ability:
+            continue
+        if 'name' in ability:
+            encode_section_text(binary, ability['name'], 0x17 + i * 0xC8, max_length=0x28,
+                                id=f'CharaAbility.csv:{i},name')
+        if 'description' in ability:
+            encode_section_text(binary, ability['description'], 0x40 + i * 0xC8, max_length=0x89,
+                                id=f'CharaAbility.csv:{i},description')
     outputdir = outputdir / '_Data/System'
     outputdir.mkdir(parents=True, exist_ok=True)
     with open(outputdir / 'CharaAbility.dat', 'wb') as f:
-        f.write(binary)
+        f.write(bytes(binary))
 
 
 
@@ -99,7 +90,7 @@ def recompile_chara_ability(l7cdir, csvdir, outputdir):
 #####################################################TEST
 #def recompile_chara_ability(l7cdir, csvdir, outputdir):
 ##open the csv
-#    with open(csvdir / 'CharaAbility.csv', 'r', encoding='utf-8', newline='') as f:
+#    with open(csvdir / 'CharaAbility.csv', 'r', encoding='utf-8-sig', newline='') as f:
 #        abilites = read_csv_data(f, 'iss', ['index', 'field', 'English'])
 #
 ##open the dat        
@@ -135,7 +126,7 @@ def recompile_chara_ability(l7cdir, csvdir, outputdir):
 #
 #def recompile_chara_ability(l7cdir, csvdir, outputdir):
 #   abilities = {}
-#   with open(csvdir / 'CharaAbility.csv', 'r', encoding='utf-8', newline='') as f:    
+#   with open(csvdir / 'CharaAbility.csv', 'r', encoding='utf-8-sig', newline='') as f:    
 #       reader = csv.DictReader(f)
 #       for row in reader:
 #           i = int(row['index'])

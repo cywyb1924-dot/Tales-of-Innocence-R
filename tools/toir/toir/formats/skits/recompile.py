@@ -3,7 +3,7 @@ import csv
 
 def _read_skits(csvdir):
     skits = {}
-    with open(csvdir / 'Skit.csv', 'r', encoding='utf-8', newline='') as f:
+    with open(csvdir / 'Skit.csv', 'r', encoding='utf-8-sig', newline='') as f:
         reader = csv.DictReader(f)
         for row in reader:
             path = row['File']

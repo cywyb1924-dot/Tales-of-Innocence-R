@@ -90,22 +90,22 @@ def extract_pack_field(l7cdir, outputdir):
 
 def recompile_pack_field(l7cdir, csvdir, outputdir):
 #open the csv
-    with open(csvdir / 'CharaNames.csv', 'r', encoding='utf-8', newline='') as f:
+    with open(csvdir / 'CharaNames.csv', 'r', encoding='utf-8-sig', newline='') as f:
         chara_names = read_csv_data(f, 'is', ['#', 'Korean'])
 
-    with open(csvdir / 'Locations.csv', 'r', encoding='utf-8', newline='') as f:
+    with open(csvdir / 'Locations.csv', 'r', encoding='utf-8-sig', newline='') as f:
         locations = read_csv_data(f, 'is', ['#', 'Korean'])
 
-    with open(csvdir / 'Locations2.csv', 'r', encoding='utf-8', newline='') as f:
+    with open(csvdir / 'Locations2.csv', 'r', encoding='utf-8-sig', newline='') as f:
         locations2 = read_csv_data(f, 'is', ['#', 'Korean'])
 
-    with open(csvdir / 'Locations3.csv', 'r', encoding='utf-8', newline='') as f:
+    with open(csvdir / 'Locations3.csv', 'r', encoding='utf-8-sig', newline='') as f:
         locations3 = read_csv_data(f, 'is', ['#', 'Korean'])
 
-    with open(csvdir / 'Movie.csv', 'r', encoding='utf-8', newline='') as f:
+    with open(csvdir / 'Movie.csv', 'r', encoding='utf-8-sig', newline='') as f:
         movies = read_csv_data(f, 'is', ['#', 'Korean'])
 
-    with open(csvdir / 'SkitNames.csv', 'r', encoding='utf-8', newline='') as f:
+    with open(csvdir / 'SkitNames.csv', 'r', encoding='utf-8-sig', newline='') as f:
         skit_names = read_csv_data(f, 'is', ['#', 'Korean'])
 
 #open the original dat

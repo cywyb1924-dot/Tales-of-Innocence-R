@@ -12,8 +12,15 @@ def export_texture(binary, path):
         rows = []
         stride = width * 4
         for _ in range(height):
-            rows.append(binary[offset:offset+stride])
-            offset += stride    
+            row = binary[offset:offset+stride]
+            offset += stride
+            # raw pixel bytes are BGRA on disk; convert to RGBA for the PNG
+            rgba_row = bytearray(len(row))
+            rgba_row[0::4] = row[2::4]
+            rgba_row[1::4] = row[1::4]
+            rgba_row[2::4] = row[0::4]
+            rgba_row[3::4] = row[3::4]
+            rows.append(bytes(rgba_row))
 
         with open(path, 'wb') as f:
             writer = png.Writer(width, height, bitdepth=8, alpha=True, greyscale=False)

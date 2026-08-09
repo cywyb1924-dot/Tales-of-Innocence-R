@@ -45,7 +45,7 @@ def extract_artes(l7cdir, outputdir):
 
 def read_artes_csv(csvdir):
     artes = {}
-    with open(csvdir / 'ArtsDataPack.csv', 'r', encoding='utf-8', newline='') as f:
+    with open(csvdir / 'ArtsDataPack.csv', 'r', encoding='utf-8-sig', newline='') as f:
         reader = csv.DictReader(f, ['category', 'index', 'field', 'japanese', 'translation'])
         for row in reader:
             category = row['category']

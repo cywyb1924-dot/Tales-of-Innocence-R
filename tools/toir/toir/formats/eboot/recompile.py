@@ -9,7 +9,7 @@ from collections import namedtuple
 
 def _load_eboot_csv(csvpath):
     text = {}
-    with open(csvpath / 'eboot.csv', 'r', encoding='utf-8', newline='') as f:
+    with open(csvpath / 'eboot.csv', 'r', encoding='utf-8-sig', newline='') as f:
         reader = csv.DictReader(f)
         for row in reader:
             id = row['Pointer']
@@ -69,43 +69,68 @@ def recompile_eboot(ebootpath, csvpath, outputdir):
 
     # Collect text slots (take care that multiple pointers may point to the same
     # slot!)
-    slots = SortedList([], key=lambda x: x.size)
-    unique_ptrs = {pointer.value for pointer in pointers}
-    for value in unique_ptrs:
-        length = _decode_length(eboot, value)
-        slots.add(Slot(value, length))
+    unique_ptrs = sorted({pointer.value for pointer in pointers})
+    raw_slots = [(value, _decode_length(eboot, value)) for value in unique_ptrs]
+
+    # Coalesce slots that sit back-to-back in memory (end of one == start of
+    # the next) into one larger contiguous region. Most original Japanese
+    # strings are packed with no gap between them, so treating each string's
+    # freed space as an isolated slot needlessly fragments the pool: a
+    # translation longer than any single original string can still fit fine
+    # into a run of several adjacent ones. Non-adjacent slots (separated by
+    # other, non-text data) are kept separate.
+    merged_slots = []
+    for address, length in raw_slots:
+        if merged_slots and merged_slots[-1][0] + merged_slots[-1][1] == address:
+            prev_address, prev_length = merged_slots[-1]
+            merged_slots[-1] = (prev_address, prev_length + length)
+        else:
+            merged_slots.append((address, length))
+
+    slots = SortedList([Slot(address, length) for address, length in merged_slots], key=lambda x: x.size)
 
     # f = open('pointers.txt', 'w', encoding='utf-8')
 
-    # Allocate slots for translations
-    allocated = {}
-    for i, pointer in enumerate(pointers):
-        translation = translations[pointer.value]
-        if translation in allocated:
-            # f.write(f'{allocated[translation]:08X} -> {translation}\n')
-            pointers[i] = Pointer(pointer.type, pointer.where, allocated[translation])
-            continue
+    # Allocate slots for translations. Process the *unique* translation strings
+    # largest-first (best-fit-decreasing) rather than in pointer-table order --
+    # allocating small strings first can waste the few large slots on tiny
+    # leftovers and starve later, longer translations of a home even though
+    # total capacity is sufficient. Every pointer sharing the same translation
+    # text reuses a single allocation.
+    unique_translations = {translations[pointer.value] for pointer in pointers}
+    encoded_by_translation = {t: encode_text(t) for t in unique_translations}
+    order = sorted(unique_translations, key=lambda t: len(encoded_by_translation[t]), reverse=True)
 
-        encoded = encode_text(translation)
+    allocated = {}
+    for translation in order:
+        encoded = encoded_by_translation[translation]
         length = len(encoded)
         j = slots.bisect_left(Slot(0, length))
         if j == len(slots):
-            raise ValueError(f'eboot.bin: could not allocate an slot for {i}/"{translation}"')            
-            #break
+            raise ValueError(f'eboot.bin: could not allocate a slot for "{translation}" ({length} bytes)')
 
-        start = address_to_offset(slots[j].address)
-        end = start + length        
-        eboot[start:end] = encoded
-        pointers[i] = Pointer(pointer.type, pointer.where, slots[j].address)
-        allocated[translation] = slots[j].address
-        #slot = Slot(slots[j].address + length, slots[j].size - length)
-
-        # f.write(f'{slots[j].address:08X} [{pointers[i].value:08X}] -> {translation}\n')
-
+        slot = slots[j]
         del slots[j]
-        #if slot.size > 0:
-            #f.write(f'Adding slot {slot.address:08X}, {slot.size}\n')
-            #slots.add(slot)
+
+        start = address_to_offset(slot.address)
+        end = start + length
+        eboot[start:end] = encoded
+        allocated[translation] = slot.address
+
+        # f.write(f'{slot.address:08X} [{slot.address:08X}] -> {translation}\n')
+
+        # Reclaim unused tail space instead of discarding it -- byte-level text
+        # pointers don't require 4-byte alignment (see address_to_offset /
+        # _replace_direct_pointer / _replace_embedded_pointer, none of which
+        # assume alignment), so a leftover slot mid-region is safe to reuse.
+        leftover_size = slot.size - length
+        if leftover_size > 0:
+            # f.write(f'Adding slot {slot.address + length:08X}, {leftover_size}\n')
+            slots.add(Slot(slot.address + length, leftover_size))
+
+    for i, pointer in enumerate(pointers):
+        translation = translations[pointer.value]
+        pointers[i] = Pointer(pointer.type, pointer.where, allocated[translation])
 
     # Rewrite pointers
     for pointer in pointers:

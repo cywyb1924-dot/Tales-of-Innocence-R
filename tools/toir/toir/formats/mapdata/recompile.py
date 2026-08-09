@@ -5,7 +5,7 @@ from ..dat import DatFile
 
 def read_from_csv(file):
     script = {}
-    with open(file, 'r', newline='', encoding='utf-8') as f:
+    with open(file, 'r', newline='', encoding='utf-8-sig') as f:
         reader = csv.DictReader(f)
         for row in reader:
             path = row['Path']

@@ -24,7 +24,7 @@ def extract_tutorial(l7cdir, outputdir):
 
 def read_tutorial_csv(path:str):
   columns = ['StructId', 'LineNumber', 'Jap', 'Eng']
-  df_translations = pd.read_csv(path, delimiter=',', encoding='utf-8')
+  df_translations = pd.read_csv(path, delimiter=',', encoding='utf-8-sig')
   df_translations.columns = columns
   df_translations['StructId'] = df_translations['StructId'].astype(int)
   df_translations['Eng'] = df_translations['Eng'].fillna('')
@@ -66,7 +66,7 @@ def insert_tutorial(file_path:str, df_translations):
 
 
 def recompile_tutorial(l7cdir, csvdir, outputdir):
-    df_translations = read_tutorial_csv(csvdir / 'TutorialGame.csv')
+    df_translations = read_tutorial_csv(csvdir / 'TutorialData.csv')
     end = '_Data/Battle/TutorialData.dat'
     original_path = l7cdir / end
     final_path = outputdir / end

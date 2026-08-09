@@ -37,7 +37,7 @@ def extract_story_book(l7cdir, outputdir):
 
 def read_storybook_csv(path:str):
   columns = ['StructId', 'Type', 'LineNumber', 'Jap', 'Eng']
-  df_translations = pd.read_csv(path, delimiter=',', encoding='utf-8')
+  df_translations = pd.read_csv(path, delimiter=',', encoding='utf-8-sig')
   df_translations.columns = columns
   df_translations['StructId'] = df_translations['StructId'].astype(int)
   df_translations['Eng'] = df_translations['Eng'].str.replace('<', '{')
@@ -120,7 +120,7 @@ def insert_storybook(file_path:str, df_translations):
 
 
 def recompile_storybook(l7cdir, csvdir, outputdir):
-    df_translations = read_storybook_csv(csvdir / 'Storybook.csv')
+    df_translations = read_storybook_csv(csvdir / 'StoryBookDataPack.csv')
     end = '_Data/System/StoryBookDataPack.dat'
     original_path = l7cdir / end
     final_path = outputdir / end

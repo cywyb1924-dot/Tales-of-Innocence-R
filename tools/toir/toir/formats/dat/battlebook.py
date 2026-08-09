@@ -53,7 +53,7 @@ def extract_battle_book(l7cdir, outputdir):
 
 def read_battlebook_csv(path:str):
   columns = ['StructId', 'Type', 'LineNumber', 'Jap', 'Eng']
-  df_translations = pd.read_csv(path, delimiter=',', encoding='utf-8')
+  df_translations = pd.read_csv(path, delimiter=',', encoding='utf-8-sig')
   df_translations.columns = columns
   df_translations['StructId'] = df_translations['StructId'].astype(int)
   df_translations['Eng'] = df_translations['Eng'].fillna('')
@@ -134,7 +134,7 @@ def insert_battlebook(file_path:str, df_translations):
 
 
 def recompile_battlebook(l7cdir, csvdir, outputdir):
-    df_translations = read_battlebook_csv(csvdir / 'Battlebook.csv')
+    df_translations = read_battlebook_csv(csvdir / 'BattleBookDataPack.csv')
     end = '_Data/System/BattleBookDataPack.dat'
     original_path = l7cdir / end
     final_path = outputdir / end

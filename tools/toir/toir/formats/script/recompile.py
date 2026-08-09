@@ -3,7 +3,7 @@ import csv
 
 def _read_story(csvdir):
     story = {}
-    with open(csvdir / 'Story.csv', 'r', encoding='utf-8', newline='') as f:
+    with open(csvdir / 'Story.csv', 'r', encoding='utf-8-sig', newline='') as f:
         reader = csv.DictReader(f)
         for row in reader:
             file = row['File']
