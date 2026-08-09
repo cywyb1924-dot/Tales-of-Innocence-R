@@ -1,5 +1,8 @@
 2_translated/**/*.csv
 
+# 원본 게임 덤프 / 배포용으로 만든 설치 zip (저작권 있는 게임 데이터, 재배포 금지)
+/0_00/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
