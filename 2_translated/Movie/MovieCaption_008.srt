@@ -1,49 +1,48 @@
 1
 00:00:01,000 --> 00:00:03,000
-Hm? What?
+음? 뭐지?
 
 2
 00:00:03,000 --> 00:00:05,000
-A ship’s approachin’ us.
+배가 접근하고 있어.
 
 3
 00:00:14,000 --> 00:00:15,000
-Whoa!
+우왓!
 
 4
 00:00:15,000 --> 00:00:16,000
-Damn, what’s happening!? 
+젠장, 무슨 일이야!?
 
 5
 00:00:16,000 --> 00:00:21,700
-Registration No. 120093
-Garam Ship No. 120093
+등록 번호 120093
+가람 선적 120093호
 
 6
 00:00:21,700 --> 00:00:23,399
-Stop your vessel at once!
+즉시 정선하라!
 
 7
 00:00:23,399 --> 00:00:26,000
-Why are we being shot at!?
-What happened!?
+왜 우리한테 총을 쏘는 거야!?
+무슨 일이야!?
 
 8
 00:00:26,000 --> 00:00:29,000
-Garam Ship No. 120093!
+가람 선적 120093호!
 
 9
 00:00:29,000 --> 00:00:30,799
-This voice!
-It’s that woman again!
+이 목소리!
+또 그 여자다!
 
 10
 00:00:30,799 --> 00:00:35,299
-Ship Number 120093.
-Stop your vessel at once and surrender!
+선적 번호 120093호.
+즉시 정선하고 항복하라.
 
 11
 00:00:35,299 --> 00:00:38,000
-Should you fail to surrender,
-we’ll have no choice but to sink your ship!
-
+항복하지 않으면
+어쩔 수 없이 격침하겠다!

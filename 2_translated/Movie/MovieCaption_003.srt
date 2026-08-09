@@ -1,37 +1,35 @@
 1
 00:00:00,000 --> 00:00:04,500
-Asura!  You bastard!!
+아스라! 이 개자식!!
 
 2
 00:00:04,500 --> 00:00:09,000
-You’ve killed another one of my comrades!
+또 내 동료를 죽였구나!
 
 3
 00:00:09,800 --> 00:00:15,199
-I won’t forgive you... I won’t forgive you!!
+용서 못 해... 절대 용서 못 해!!
 
 4
 00:00:16,000 --> 00:00:17,799
-Stay back, Ruca!
+물러서, 루카!
 
 5
 00:00:17,799 --> 00:00:21,000
-Rest thine heart unto thy blade
-to become a shield for others!
+마음을 검에 실어, 남을 지키는 방패가 되어라
 
 6
 00:00:21,000 --> 00:00:24,250
-It’s something my gramps used to say to me.
+할아버지가 늘 하시던 말씀이야.
 
 7
 00:00:24,500 --> 00:00:26,500
-Get back so you don’t get hurt.
-
-7
-00:00:26,500 --> 00:00:28,000
-Here I go!!
+다치지 않게 물러나 있어.
 
 8
-00:00:30,200 --> 00:00:32,200
-...Durandal!
+00:00:26,500 --> 00:00:28,000
+간다!!
 
+9
+00:00:30,200 --> 00:00:32,200
+...듀란달!

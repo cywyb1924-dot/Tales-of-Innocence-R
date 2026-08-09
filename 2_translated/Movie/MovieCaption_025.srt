@@ -1,8 +1,7 @@
 1
 00:00:12,300 --> 00:00:17,500
-You got guts to attack this camp alone!
+혼자서 이 진영을 공격하다니 배짱 한번 좋구나!
 
 2
 00:00:19,700 --> 00:00:21,500
-We won’t let you get away with this!
-
+이대로 순순히 넘어갈 순 없지!

@@ -1,103 +1,102 @@
 1
 00:00:00,000 --> 00:00:01,200
-Wait a minute!
+잠깐만!
 
 2
 00:00:02,000 --> 00:00:03,500
-Then then...
+그, 그럼...
 
 3
 00:00:03,500 --> 00:00:06,000
-What about plan C?
+C안은 어때?
 
 4
 00:00:06,000 --> 00:00:09,699
-Uhh... what happened to plan B again?	
+어... B안은 어떻게 됐더라?
 
 5
 00:00:09,699 --> 00:00:12,000
-Ah well, whatever.
+뭐, 아무렴 어때.
 
 6
 00:00:12,000 --> 00:00:17,000
-Now, now, this should be fine first, right?
+자, 자, 이번엔 이걸로 괜찮겠지?
 
 7
 00:00:18,299 --> 00:00:23,200
-Before you attack me, I’m gonna let
-you in on some classified information.
+날 공격하기 전에
+기밀 정보 하나 알려주지.
 
 8
 00:00:23,200 --> 00:00:27,500
-And you all will change your minds.
+그럼 너희 모두 생각이 바뀔 거다.
 
 9
 00:00:27,500 --> 00:00:31,500
-Just like a mountain’s weather!
+산 날씨 변하듯이 말이야!
 
 10
 00:00:32,000 --> 00:00:36,000
-Illia, Ricardo. Got your bullets ready?
+이리아, 리카르도. 총알은 준비됐나?
 
 11
 00:00:36,000 --> 00:00:36,799
-Locked and loaded.
+언제든지.
 
 12
 00:00:36,799 --> 00:00:38,000
-Naturally!
+당연하지!
 
 13
 00:00:40,000 --> 00:00:44,000
-Don’t shoot at someone defenseless!
+무방비한 사람한테 쏘지 마!
 
 14
 00:00:44,000 --> 00:00:45,299
-Wait, hear me out!!
+잠깐, 내 말 좀 들어봐!!
 
 15
 00:00:45,299 --> 00:00:51,000
-I’ll spill the beans now! Okay?
+지금 다 불겠다! 됐지?
 
 16
 00:00:51,000 --> 00:00:54,000
-Now, boy? 
+자, 얘야?
 
 17
 00:00:54,000 --> 00:00:58,700
-Lend me your ear for a bit.
-I’ll pay you back later.
+잠깐 귀 좀 빌려줘.
+나중에 갚을게.
 
 18
 00:00:58,700 --> 00:01:00,000
-Huh? Me?
+어? 나?
 
 19
 00:01:00,000 --> 00:01:01,000
-Ruca!
+루카!
 
 20
 00:01:01,000 --> 00:01:04,000
-Don’t listen to this guy!
+이 녀석 말 듣지 마!
 
 21
 00:01:04,000 --> 00:01:09,000
-Now, now, boy.
-Listen closely...
+자, 자, 얘야.
+잘 들어봐...
 
 22
 00:01:09,000 --> 00:01:13,300
-This is the sound of a blade tearing through flesh...
+이건 칼날이 살을 가르는 소리야...
 
 23
 00:01:25,500 --> 00:01:26,000
-Crap!!
+젠장!!
 
 24
 00:01:26,000 --> 00:01:27,000
-YOU BASTARD!!
+이 자식!!
 
 25
 00:01:27,000 --> 00:01:29,000
-Ruca, hang in there!!
-
+루카, 정신 차려!!
