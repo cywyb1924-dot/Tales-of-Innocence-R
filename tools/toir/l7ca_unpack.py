@@ -1,47 +1,35 @@
 """
-L7CA 아카이브(`toidata_release.l7c`)를 원본으로 삼아, 압축 해제된 loose 설치
-(예: Vita3K의 `ux0:app/PCSG00009/`)에서 빠진 파일을 찾아 채워 넣는 도구.
+L7CA 아카이브(`toidata_release.l7c`) 전체를 loose 파일로 압축 해제하는 도구.
 
 ## 왜 필요한가
 
-2026-08-09 세션에서 전체 번역을 실제 Vita3K 설치에 반영하고 플레이 QA를
-하던 중, 특정 지점(예: 상점 NPC와 대화, 특정 필드 진입)에서 게임이 검은
-화면에 멈추는 걸 발견했습니다. 로그를 보니 `_Data/Script/...`의 특정
-`.dat` 파일을 못 찾아 `sceIoOpen`을 1초 간격으로 무한 재시도하고 있었습니다.
-확인해보니 **이 파일은 패치 전 원본 백업에도 이미 없었던 파일** — 즉 이
-Vita3K 설치의 loose 파일 추출 자체가 처음부터 불완전했던 것이었습니다
-(우리 번역/재컴파일 작업과는 무관).
+`toidata_release.l7c`를 우리 xdelta 패치로 최신화해도, Vita3K는 게임
+실행 중 개별 콘텐츠 파일(`_Data/Script/...`, `_Data/System/...` 등)을
+**loose 파일로만** 찾습니다 — `.l7c` 안에 들어있는 내용을 실행 중에 직접
+꺼내 읽는 기능이 없어서, loose 파일이 없으면 "Missing file"을 무한
+재시도합니다(2026-08-09 세션에서 직접 재현·확인). 즉 `.l7c`를 패치하는
+것만으로는 부족하고, 그 패치된 `.l7c`를 **loose `_Data/` 트리로 실제
+압축 해제**해서 설치 폴더에 넣어야 번역이 실제로 반영됩니다.
 
-`toidata_release.l7c`를 직접 열어 확인한 결과 `_Data/Script/`만 966개 중
-435개(45%!)가 로컬에 없었고, 전체 아카이브(14,076개 엔트리) 기준으로도
-광범위하게 누락돼 있었습니다. 이 스크립트는 아카이브의 파일 목록을 훑어서
-로컬에 없는 파일을 압축 해제하며 채워 넣습니다(압축된 청크는 게임 자체의
-커스텀 LZ 포맷이라 `taiko_decompress()`로 풀고, 아카이브에 저장된 CRC32와
-대조해 무결성을 검증한 뒤에만 씁니다).
-
-## 포맷 사실
-
-`l7ca_patch_multi.py`와 동일한 L7CA 헤더/엔트리/청크 구조를 읽기 전용으로
-재사용합니다 — 자세한 필드 설명은 그 파일의 docstring 참고. 청크 압축
-플래그(`chunk_size_field` bit31)가 켜진 경우, 압축 데이터는 zlib/deflate가
-**아니라** `taikotools/psvita-l7ctool/psvita-l7ctool/TaikoCompression.cs`가
-구현한 게임 전용 LZ 변형입니다(`taiko_decompress()`는 그 C# 코드를 그대로
-Python으로 이식한 것 — 이 세션에서 압축된 169개 파일 전부 CRC32 검증까지
-통과해 정확함을 확인했습니다).
+이 스크립트가 그 압축 해제를 담당합니다. `l7ca_extract_missing.py`와
+같은 L7CA 포맷 파싱 로직(및 게임 전용 커스텀 LZ 압축 `taiko_decompress`)을
+재사용하되, "누락된 것만" 채우는 대신 **아카이브 안의 `_Data/...` 항목
+전부**를 대상 폴더에 풀어씁니다.
 
 ## 사용법
 
-    python l7ca_extract_missing.py <원본.l7c> <설치_루트_디렉토리> [경로_접두사]
+    python l7ca_unpack.py <toidata_release.l7c> <출력_디렉토리> [경로_접두사]
 
-`<설치_루트_디렉토리>` 아래에서 아카이브 엔트리 이름과 같은 상대경로에
-파일이 없으면 아카이브에서 뽑아 그 경로에 씁니다. `[경로_접두사]`를 주면
-그 접두사로 시작하는 엔트리만 검사합니다(생략 시 아카이브 전체 스캔).
+`[경로_접두사]`를 주면(기본값 `_Data/`) 그 접두사로 시작하는 항목만
+풉니다. 압축된 청크는 CRC32까지 검증한 뒤에만 씁니다 — 무결성이 깨진
+파일은 절대 조용히 쓰지 않고 목록으로 알려줍니다.
 
-## 실전 검증 기록 (2026-08-09)
+## 실전 검증 (2026-08-09)
 
-`_Data/Script/`에서 압축 안 된 266개를 먼저 추출(바이트 그대로 복사), 이후
-압축된 169개도 `taiko_decompress()` + CRC32 대조로 전부 성공. 이어서 전체
-아카이브(14,076개 엔트리)를 다시 스캔해 로컬 누락 0건까지 확인했습니다.
+이 스크립트와 동일한 파싱/압축해제 로직으로 `_Data/Script/` 전체
+966개 파일(비압축 266개 + 압축 169개)을 CRC32 전수 대조까지 통과하며
+복구했고, 그 뒤 전체 아카이브(14,076개 엔트리) 기준 로컬 누락 0건까지
+확인했습니다.
 """
 import struct
 import zlib
@@ -169,9 +157,9 @@ def chunk_table_start(header):
         header['files'] * FILE_ENTRY_SIZE
 
 
-def extract_missing(l7c_path, install_root, prefix_filter=''):
+def unpack(l7c_path, out_dir, prefix_filter='_Data/', verbose=True):
     l7c_path = Path(l7c_path)
-    install_root = Path(install_root)
+    out_dir = Path(out_dir)
 
     with open(l7c_path, 'rb') as f:
         filesize = l7c_path.stat().st_size
@@ -179,27 +167,25 @@ def extract_missing(l7c_path, install_root, prefix_filter=''):
         name_to_id = build_name_to_id(f, header, filesize)
         ctable_start = chunk_table_start(header)
 
-        candidates = [n for n in name_to_id if n.startswith(prefix_filter) and '?' not in n]
-        print(f"archive has {len(candidates)} entries under '{prefix_filter}'")
+        targets = sorted(n for n in name_to_id if n.startswith(prefix_filter) and '?' not in n)
+        total = len(targets)
+        print(f"unpacking {total} entries under '{prefix_filter}' to {out_dir}")
 
-        missing = [n for n in candidates if not (install_root / n).exists()]
-        print(f"missing locally: {len(missing)}")
-        if not missing:
-            return
-
-        extracted = 0
+        written = 0
         failed = []
-        for name in missing:
+        for i, name in enumerate(targets):
             tid = name_to_id[name]
             pos = file_entry_pos(header, tid)
             f.seek(pos)
             compressed_size, raw_size, chunk_idx, chunk_count, offset, crc32 = \
                 struct.unpack(FILE_ENTRY_FMT, f.read(FILE_ENTRY_SIZE))
 
-            # A file can span multiple chunks, each compressed as its own
-            # independent Taiko stream with its own end marker -- decompressing
+            # Read each of this file's chunk-table entries up front (a file can
+            # span multiple chunks -- each chunk was compressed as its own
+            # independent Taiko stream with its own end marker, so decompressing
             # the whole multi-chunk blob in one call truncates at the first
-            # chunk's end marker. Chain them via taiko_decompress's `prev`.
+            # chunk's end marker. Chain them via taiko_decompress's `prev`
+            # instead, matching what multi-chunk files actually need.)
             chunk_infos = []
             for c in range(chunk_count):
                 f.seek(ctable_start + (chunk_idx + c) * CHUNK_ENTRY_SIZE)
@@ -233,23 +219,29 @@ def extract_missing(l7c_path, install_root, prefix_filter=''):
                 failed.append((name, f'crc mismatch: got {new_crc:08x} expected {crc32 & 0xffffffff:08x}'))
                 continue
 
-            local_path = install_root / name
+            local_path = out_dir / name
             local_path.parent.mkdir(parents=True, exist_ok=True)
             with open(local_path, 'wb') as out:
                 out.write(data)
-            extracted += 1
+            written += 1
 
-        print(f"extracted: {extracted}")
+            if verbose and (i + 1) % 500 == 0:
+                print(f"  {i + 1}/{total}...")
+
+        print(f"\nwritten: {written} / {total}")
         if failed:
             print(f"FAILED: {len(failed)}")
             for n, err in failed[:20]:
                 print(f"  {n}: {err}")
+            return False
+        return True
 
 
 if __name__ == '__main__':
     if len(sys.argv) not in (3, 4):
-        print('usage: python l7ca_extract_missing.py <원본.l7c> <설치_루트_디렉토리> [경로_접두사]')
+        print('usage: python l7ca_unpack.py <toidata_release.l7c> <출력_디렉토리> [경로_접두사=_Data/]')
         sys.exit(1)
-    l7c_arg, root_arg = sys.argv[1], sys.argv[2]
-    prefix_arg = sys.argv[3] if len(sys.argv) == 4 else ''
-    extract_missing(l7c_arg, root_arg, prefix_arg)
+    l7c_arg, out_arg = sys.argv[1], sys.argv[2]
+    prefix_arg = sys.argv[3] if len(sys.argv) == 4 else '_Data/'
+    ok = unpack(l7c_arg, out_arg, prefix_arg)
+    sys.exit(0 if ok else 1)
