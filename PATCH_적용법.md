@@ -12,7 +12,10 @@
   아카이브) 패치. 번역된 스토리·스킷·필드·아이템·시스템 텍스트, 텍스처,
   그리고 **게임 자체 내장 폰트 파일에 주입된 한글 글리프**가 여기 들어있습니다.
 - `tools/toir/l7ca_unpack.py` — 패치된 `.l7c`를 실제 게임이 읽는 loose
-  파일(`_Data/`)로 풀어주는 도구(Python, 이 저장소에 포함)
+  파일(`_Data/`)로 풀어주는 도구(커맨드라인, Python 표준 라이브러리만 사용)
+- `tools/toir/l7ca_unpack_gui.py` — 위 도구를 **커맨드라인 없이 마우스 클릭만으로**
+  쓸 수 있게 만든 GUI 버전. 파일/폴더를 찾아보기 창으로 선택하고 버튼만
+  누르면 됩니다. 일반 사용자에게는 이쪽을 권장합니다.
 
 ## 왜 이렇게 3단계가 필요한가 (배경)
 
@@ -63,6 +66,19 @@ copy toidata_release_ko.l7c  <설치폴더>/toidata_release.l7c
 ### 4. `.l7c`를 loose 파일로 압축 해제 (필수!)
 
 Python 3가 필요합니다(추가 설치 라이브러리 없음, 표준 라이브러리만 사용).
+**Python이 아직 없다면 아래 "Python 설치 방법" 절을 먼저 따라 하세요.**
+
+**GUI 버전 (권장, 마우스로만 조작)**
+
+`l7ca_unpack_gui.py` 파일을 더블클릭하거나(또는 `python l7ca_unpack_gui.py`로
+실행), 창이 뜨면:
+1. "① 패치된 toidata_release.l7c 파일" 옆 "찾아보기..."로 방금 3단계에서
+   교체한 `.l7c` 파일 선택
+2. "② 게임 설치 폴더" 옆 "찾아보기..."로 `eboot.bin`이 있는 그 설치 폴더 선택
+3. "③ 압축 해제 시작" 버튼 클릭 → 진행바가 다 차고 "완료: 14076 / 14076개
+   파일 작성됨"이 나오면 성공
+
+**커맨드라인 버전**
 
 ```
 python l7ca_unpack.py <설치폴더>/toidata_release.l7c <설치폴더>
@@ -94,6 +110,31 @@ Vita3K의 설치 과정은 `sce_pfs/`(PS Vita 패키지 무결성·DRM 검증 �
 - 패치된 `.l7c`를 `l7ca_unpack.py`로 압축 해제한 결과가 원본 아카이브에
   저장된 CRC32와 전부 일치(14,076개 파일 전수 검사, 실패 0건)
 - 실제 부팅 후 스토리·스킷·전투·메뉴·필드명 등 전반에서 한글 텍스트 정상 출력
+
+## Python 설치 방법 (Windows, 처음 하시는 분용)
+
+4단계(`.l7c` 압축 해제)에는 Python이 필요합니다. 없으신 경우:
+
+1. **Microsoft Store에서 설치 (가장 쉬움)**
+   - 시작 메뉴에서 "Microsoft Store" 실행 → 검색창에 "Python 3.12" 입력
+   - 파이썬 소프트웨어 재단(Python Software Foundation)이 배포한 "Python 3.12"
+     선택 → "설치" 클릭 → 끝나면 별도 설정 없이 바로 사용 가능
+2. **공식 사이트에서 설치**
+   - https://www.python.org/downloads/windows/ 에서 최신 "Windows installer
+     (64-bit)" 다운로드·실행
+   - **설치 화면 맨 아래 "Add python.exe to PATH" 체크박스를 반드시
+     체크**한 뒤 "Install Now" 클릭 (이 체크를 빠뜨리면 `python` 명령이
+     인식되지 않습니다)
+
+**설치 확인**: 명령 프롬프트(또는 PowerShell)를 새로 열어서 `python --version`
+입력 → `Python 3.x.x` 같은 버전이 출력되면 정상 설치된 것입니다.
+
+**"python을 찾을 수 없습니다" 에러가 계속 나올 때**: PATH 등록이 안 된
+경우입니다. 아래처럼 python.exe의 전체 경로를 직접 써서 실행할 수도 있습니다
+(설치 시 기본 경로 기준):
+```
+%LOCALAPPDATA%\Programs\Python\Python312\python.exe l7ca_unpack_gui.py
+```
 
 ## 알려진 이슈
 
